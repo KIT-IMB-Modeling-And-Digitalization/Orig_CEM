@@ -65,6 +65,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include "common.h"
+
 
 #define MAXCYC 30000    /* Maximum number of cycles of hydration */
 			/* For hydration under sealed conditions: */
@@ -176,6 +178,12 @@
 /* Added 11/94 */
 /* Note that if SYSIZE exceeds 256, need to change x, y, and z to */
 /* int variables */
+
+char mic[SYSIZE][SYSIZE][SYSIZE];
+short int micpart[SYSIZE][SYSIZE][SYSIZE];
+char micorig[SYSIZE][SYSIZE][SYSIZE];
+
+
 struct ants{
         unsigned char x,y,z,id;
 	int cycbirth;
@@ -194,13 +202,13 @@ struct togo{
 /* Global variables */
 /* Microstructure stored in array mic of type char to minimize storage */
 /* Initial particle IDs stored in array micpart (for assessing set point) */
-static char mic [SYSIZE] [SYSIZE] [SYSIZE];
-static char micorig [SYSIZE] [SYSIZE] [SYSIZE];
-static short int micpart [SYSIZE] [SYSIZE] [SYSIZE];
+// static char mic [SYSIZE] [SYSIZE] [SYSIZE];
+// static char micorig [SYSIZE] [SYSIZE] [SYSIZE];
+// static short int micpart [SYSIZE] [SYSIZE] [SYSIZE];
 static short int cshage [SYSIZE] [SYSIZE] [SYSIZE];
 static short int faces [SYSIZE] [SYSIZE] [SYSIZE];
 /* counts for dissolved and solid species */
-long int discount[EMPTYP+1], count[EMPTYP+1];
+int discount[EMPTYP+1], count[EMPTYP+1];
 long int ncshplategrow=0,ncshplateinit=0;
 /* Counts for pozzolan reacted, initial pozzolan, gypsum, ettringite,
 initial porosity, and aluminosilicate reacted */
@@ -215,12 +223,12 @@ int xoff[27]={1,0,0,-1,0,0,1,1,-1,-1,0,0,0,0,1,1,-1,-1,1,1,1,1,-1,-1,-1,-1,0};
 int yoff[27]={0,1,0,0,-1,0,1,-1,1,-1,1,-1,1,-1,0,0,0,0,1,-1,1,-1,1,1,-1,-1,0};
 int zoff[27]={0,0,1,0,0,-1,0,0,0,0,1,1,-1,-1,1,-1,1,-1,1,1,-1,-1,1,-1,1,-1,0};
 /* Parameters for kinetic modelling ---- maturity approach */
-float ind_time,temp_0,temp_cur,time_step=0.0,time_cur,E_act,beta,heat_cf;
-float w_to_c=0.0,s_to_c,krate,totfract=1.0,tfractw04=0.438596,fractwithfill=1.0;
+double ind_time,temp_0,temp_cur,time_step=0.0,time_cur,E_act,beta,heat_cf;
+double w_to_c=0.0,s_to_c,krate,totfract=1.0,tfractw04=0.438596,fractwithfill=1.0;
 float tfractw05=0.384615,surffract=0.0,pfract,pfractw05=0.615385,sulf_conc;
 long int scntcement=0,scnttotal=0;
 float U_coeff=0.0,T_ambient=25.;
-float alpha_cur,heat_old,heat_new,cemmass,mass_agg,mass_water,mass_fill,Cp_now;
+double alpha_cur,heat_old,heat_new,cemmass,mass_agg,mass_water,mass_fill,Cp_now;
 float alpha,CH_mass,mass_CH,mass_fill_pozz,E_act_pozz,chs_new,cemmasswgyp;
 float flyashmass,alpha_fa_cur;
 float E_act_slag;
@@ -230,7 +238,7 @@ float molarvcsh[MAXCYC],watercsh[MAXCYC],heatsum,molesh2o,saturation=1.0;
 float disprob[EMPTYP+1],disbase[EMPTYP+1],gypabsprob,ppozz;
 /* Arrays for specific gravities, molar volumes, heats of formation, and */
 /* molar water consumption for each phase */
-float specgrav[EMPTYP+1],molarv[EMPTYP+1],heatf[EMPTYP+1],waterc[EMPTYP+1];
+double specgrav[EMPTYP+1],molarv[EMPTYP+1],heatf[EMPTYP+1],waterc[EMPTYP+1];
 /* Solubility flags and diffusing species created for each phase */
 /* Also flag for C1.7SH4.0 to C1.1SH3.9 conversion */
 int soluble[EMPTYP+1],creates[EMPTYP+1],csh2flag,adiaflag,chflag,nummovsl;
@@ -1440,9 +1448,9 @@ void dissolve(cycle)
   
        	for(i=0;i<=EMPTYP;i++){
 		if((i<DIFFCSH)||(i>=EMPTYP)){
-	                fprintf(phfile,"%ld ",count[i]);
+	                fprintf(phfile,"%d ",count[i]);
 		}
-       		printf("%ld ",count[i]);
+       		printf("%d ",count[i]);
 		fprintf(disprobfile, "%f ", disprob[i]); 	
         }
         printf("\n");
@@ -2157,7 +2165,7 @@ CSH species??? */
 
         } /* end of xext for extra species generation */
 
-        printf("Dissolved- %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\n",count[DIFFCSH],
+        printf("Dissolved- %d %d %d %d %d %d %d %d %d %d %d %d\n",count[DIFFCSH],
         count[DIFFCH],count[DIFFGYP],count[DIFFC3A],count[DIFFFH3],
         count[DIFFETTR],count[DIFFAS],count[DIFFANH],count[DIFFHEM],
 	count[DIFFCAS2],count[DIFFCACL2],count[DIFFCACO3]);
@@ -2353,7 +2361,7 @@ int main()
         scanf("%s",filei);
         printf("%s\n",filei);
 	nlen=strcspn(filei,".");
-        sprintf(fileroot,"");
+        snprintf(fileroot,80,"");
 	strncat(fileroot,filei,nlen);
         printf("nlen is %d and fileroot is now %s \n",nlen,fileroot);
         fflush(stdout);
@@ -2531,11 +2539,11 @@ int main()
         printf("%d\n",outfreq);
         /* Parameters for adiabatic temperature rise calculation */
         printf("Enter the induction time in hours \n");
-        scanf("%f",&ind_time);
+        scanf("%lf",&ind_time);
         printf("%f \n",ind_time);
         time_cur+=ind_time;
         printf("Enter the initial temperature in degrees Celsius \n");
-        scanf("%f",&temp_0);
+        scanf("%lf",&temp_0);
         printf("%f \n",temp_0);
         temp_cur=temp_0;
         printf("Enter the ambient temperature in degrees Celsius \n");
@@ -2545,7 +2553,7 @@ int main()
         scanf("%f",&U_coeff);
         printf("%f \n",U_coeff);
         printf("Enter apparent activation energy for hydration in kJ/mole \n");
-        scanf("%f",&E_act);
+        scanf("%lf",&E_act);
         printf("%f \n",E_act);
         printf("Enter apparent activation energy for pozzolanic reactions in kJ/mole \n");
         scanf("%f",&E_act_pozz);
@@ -2554,10 +2562,10 @@ int main()
         scanf("%f",&E_act_slag);
         printf("%f \n",E_act_slag);
         printf("Enter kinetic factor to convert cycles to time for 25 C \n");
-        scanf("%f",&beta);
+        scanf("%lf",&beta);
         printf("%f \n",beta);
         printf("Enter mass fraction of aggregate in concrete \n");
-        scanf("%f",&mass_agg);
+        scanf("%lf",&mass_agg);
         printf("%f \n",mass_agg);
         printf("Hydration under 0) isothermal, 1) adiabatic or 2) programmed temperature history conditions \n");
         scanf("%d",&adiaflag);
@@ -2594,19 +2602,19 @@ int main()
         scanf("%d\n",&pHactive);
         printf("%d\n",pHactive);
         fflush(stdout);
-        sprintf(heatname,"%s.heat.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
-        sprintf(moviename,"%s.mov.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
-        sprintf(chshrname,"%s.chs.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
-        sprintf(adianame,"%s.adi.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
-        sprintf(parname,"%s.par.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(heatname,80,"%s.heat.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(moviename,80,"%s.mov.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(chshrname,80,"%s.chs.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(adianame,80,"%s.adi.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(parname,80,"%s.par.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
 	/* Store filename for pH file and initialize with column headings */
-        sprintf(pHname,"%s.phv.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(pHname,80,"%s.phv.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
 /*        pHfile=fopen(pHname,"w");
         fprintf(pHfile,"Cycle time(h) alpha_mass pH sigma [Na+] [K+] [Ca++] [SO4--] activityCa activityOH activitySO4 activityK molesSyngenite\n");
         fclose(pHfile); */
-        sprintf(fileo,"%s.img.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
-        sprintf(phname,"%s.pha.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
-        sprintf(ppsname,"%s.pps.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(fileo,80,"%s.img.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(phname,80,"%s.pha.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(ppsname,80,"%s.pps.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
         /* Store parameters input in parameter file */
         sprintf(cmdnew,"cp disrealnew.out %s",parname);
         system(cmdnew);
@@ -2615,13 +2623,13 @@ int main()
            fprintf(ptmpfile,"Cycle time(h) alpha_mass conn_por total_por frac_conn\n");
            fclose(ptmpfile);
        }
-        sprintf(ptsname,"%s.pts.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(ptsname,80,"%s.pts.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
         if(setfreq<=ncyc){
            ptmpfile=fopen(ptsname,"w");
            fprintf(ptmpfile,"Cycle time(h) alpha_mass conn_solid total_solid frac_conn\n");
            fclose(ptmpfile);
        }
-        sprintf(phrname,"%s.phr.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
+        snprintf(phrname,80,"%s.phr.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
         krate=exp(-(1000.*E_act/8.314)*((1./(temp_cur+273.15))-(1./298.15)));
 	/* Determine pozzolanic and slag reaction rate constants */
         kpozz=exp(-(1000.*E_act_pozz/8.314)*((1./(temp_cur+273.15))-(1./298.15)));
@@ -2825,7 +2833,7 @@ printf("Number dissolved this pass- %ld total diffusing- %ld \n",nmade,ngoing);
 		}
         /* Output complete microstructure every outfreq cycles */
                if((icyc>0)&&((icyc%outfreq)==0)){
-       		 sprintf(micname,"%s.ima.%d.%d.%1d%1d%1d",fileroot,icyc,(int)temp_0,csh2flag,adiaflag,sealed);
+       		 snprintf(micname,80,"%s.ima.%d.%d.%1d%1d%1d",fileroot,icyc,(int)temp_0,csh2flag,adiaflag,sealed);
 			micfile=fopen(micname,"w");
 
 			for(ix=0;ix<SYSIZE;ix++){

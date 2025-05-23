@@ -16,13 +16,14 @@
 #include <stdio.h>  // Required for FILE, fopen, fprintf, fclose
 
 // External global variables
-extern int SYSIZE;
-extern char ***micpart;  // Particle ID array
-extern char ***mic;      // 3D microstructure array
-extern char ***micorig;  // Original microstructure
+// extern int SYSIZE;
+extern char mic[SYSIZE][SYSIZE][SYSIZE];
+extern char micorig[SYSIZE][SYSIZE][SYSIZE];
+extern short int micpart[SYSIZE][SYSIZE][SYSIZE];
+
 
 // Cement phase definitions
-extern int C3S, C2S, C3A, C4AF;
+// extern int C3S, C2S, C3A, C4AF;
 
 // Hydration process variables
 extern int cyccnt;      // Hydration cycle count

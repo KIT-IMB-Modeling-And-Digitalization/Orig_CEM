@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stddef.h>
+#include "common.h"
+
 
 #define AGRATE 0.25        /* Probability of gypsum absorption by CSH */
 

@@ -38,6 +38,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include "common.h"
+
 
 #define SYSSIZE 100     /* system size in pixels per dimension */
 #define MAXTRIES 150000 /* maximum number of random tries for sphere placement */

@@ -16,8 +16,10 @@
 #include <stdlib.h>
 
 // External global variables from disrealnew.c
-extern int SYSIZE;
-extern char ***mic;  // ✅ CORRECT
+//extern int SYSIZE;
+extern char mic[SYSIZE][SYSIZE][SYSIZE];
+extern char micorig[SYSIZE][SYSIZE][SYSIZE];
+extern short int micpart[SYSIZE][SYSIZE][SYSIZE];
 extern int count[];
 extern char ppsname[];  // Filename for pore space output
 extern double specgrav[];  // Specific gravity values for cement phases
@@ -28,10 +30,10 @@ extern double beta;  // Calibration factor
 extern double krate;  // Hydration rate
 
 // Cement phase definitions
-extern int C3S;
-extern int C2S;
-extern int C3A;
-extern int C4AF;
+// extern int C3S;
+// extern int C2S;
+// extern int C3A;
+// extern int C4AF;
 
 #define BURNT 70      /* label for a burnt pixel */
 #define SIZE2D 49000 /* size of matrices for holding burning locations */

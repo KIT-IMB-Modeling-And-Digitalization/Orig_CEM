@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "common.h"
 
 /* This software was developed at the National Institute of */
 /* Standards and Technology by employees of the Federal */

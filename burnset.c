@@ -17,12 +17,14 @@
 
 
 // Global variables from disrealnew.c
-extern int SYSIZE;
-extern char ***mic;  // 3D microstructure array
-extern char ***micpart;  // Particle ID array
+// extern int SYSIZE;
+extern char mic[SYSIZE][SYSIZE][SYSIZE];
+extern char micorig[SYSIZE][SYSIZE][SYSIZE];
+extern short int micpart[SYSIZE][SYSIZE][SYSIZE];
+
 
 // Cement phase definitions
-extern int C3S, C2S, C3A, C4AF, SLAG, ASG, CAS2, POZZ, CSH, C3AH6, ETTR, ETTRC4AF;
+// extern int C3S, C2S, C3A, C4AF, SLAG, ASG, CAS2, POZZ, CSH, C3AH6, ETTR, ETTRC4AF;
 
 // Other hydration variables
 extern char ptsname[];  // Filename for percolation output
