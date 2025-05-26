@@ -9,4 +9,3 @@ extern double time_cur;
 extern double krate;
 extern double beta;
 extern double alpha_cur;
-// ... and so on

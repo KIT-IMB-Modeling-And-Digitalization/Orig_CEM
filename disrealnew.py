@@ -1,3 +1,4 @@
+# This python script automates the compilation and execution of C programms related to Nistir
 import subprocess
 
 def compile_c_file(c_file, output_executable, flags="-lm"):
