@@ -1,0 +1,312 @@
+Enter random number seed value (a negative integer) 
+-3034 
+ 
+ Input User Choice 
+1) Exit 
+2) Add spherical particles (cement,gypsum, pozzolans, etc.) to microstructure 
+3) Flocculate system by reducing number of particle clusters 
+4) Measure global phase fractions 
+5) Add an aggregate to the microstructure 
+6) Measure single phase connectivity (pores or solids) 
+7) Measure phase fractions vs. distance from aggregate surface 
+8) Output current microstructure to file 
+2 
+Enter number of different size spheres to use(max. is 200) 
+16 
+Enter dispersion factor (separation distance in pixels) for spheres (0-2) 
+0 corresponds to totally random placement 
+0 
+Enter probability for gypsum particles on a random particle basis (0.0-1.0) 
+0.060400 
+Enter probabilities for hemihydrate and anhydrite forms of gypsum (0.0-1.0) 
+0.515000 0.041000
+Enter number, radius, and phase ID for each sphere class (largest radius 1st) 
+Phases are 1- Cement and (random) calcium sulfate, 2- C2S, 5- Gypsum, 6- hemihydrate 7- anhydrite 8- Pozzolanic, 9- Inert, 10- Slag, 26- CaCO3 30- Fly Ash 
+Enter number of spheres of class 1 
+1 
+Enter radius of spheres of class 1 
+(Integer <=33 please) 
+17 
+Enter phase of spheres of class 1 
+1 
+Enter number of spheres of class 2 
+1 
+Enter radius of spheres of class 2 
+(Integer <=33 please) 
+15 
+Enter phase of spheres of class 2 
+1 
+Enter number of spheres of class 3 
+1 
+Enter radius of spheres of class 3 
+(Integer <=33 please) 
+14 
+Enter phase of spheres of class 3 
+1 
+Enter number of spheres of class 4 
+1 
+Enter radius of spheres of class 4 
+(Integer <=33 please) 
+13 
+Enter phase of spheres of class 4 
+1 
+Enter number of spheres of class 5 
+2 
+Enter radius of spheres of class 5 
+(Integer <=33 please) 
+12 
+Enter phase of spheres of class 5 
+1 
+Enter number of spheres of class 6 
+2 
+Enter radius of spheres of class 6 
+(Integer <=33 please) 
+11 
+Enter phase of spheres of class 6 
+1 
+Enter number of spheres of class 7 
+4 
+Enter radius of spheres of class 7 
+(Integer <=33 please) 
+10 
+Enter phase of spheres of class 7 
+1 
+Enter number of spheres of class 8 
+5 
+Enter radius of spheres of class 8 
+(Integer <=33 please) 
+9 
+Enter phase of spheres of class 8 
+1 
+Enter number of spheres of class 9 
+8 
+Enter radius of spheres of class 9 
+(Integer <=33 please) 
+8 
+Enter phase of spheres of class 9 
+1 
+Enter number of spheres of class 10 
+13 
+Enter radius of spheres of class 10 
+(Integer <=33 please) 
+7 
+Enter phase of spheres of class 10 
+1 
+Enter number of spheres of class 11 
+21 
+Enter radius of spheres of class 11 
+(Integer <=33 please) 
+6 
+Enter phase of spheres of class 11 
+1 
+Enter number of spheres of class 12 
+38 
+Enter radius of spheres of class 12 
+(Integer <=33 please) 
+5 
+Enter phase of spheres of class 12 
+1 
+Enter number of spheres of class 13 
+73 
+Enter radius of spheres of class 13 
+(Integer <=33 please) 
+4 
+Enter phase of spheres of class 13 
+1 
+Enter number of spheres of class 14 
+174 
+Enter radius of spheres of class 14 
+(Integer <=33 please) 
+3 
+Enter phase of spheres of class 14 
+1 
+Enter number of spheres of class 15 
+450 
+Enter radius of spheres of class 15 
+(Integer <=33 please) 
+2 
+Enter phase of spheres of class 15 
+1 
+Enter number of spheres of class 16 
+2674 
+Enter radius of spheres of class 16 
+(Integer <=33 please) 
+1 
+Enter phase of spheres of class 16 
+1 
+ 
+ Input User Choice 
+1) Exit 
+2) Add spherical particles (cement,gypsum, pozzolans, etc.) to microstructure 
+3) Flocculate system by reducing number of particle clusters 
+4) Measure global phase fractions 
+5) Add an aggregate to the microstructure 
+6) Measure single phase connectivity (pores or solids) 
+7) Measure phase fractions vs. distance from aggregate surface 
+8) Output current microstructure to file 
+4 
+
+ Phase counts are: 
+Porosity= 627570 
+Cement= 349954 
+C2S= 0 
+Gypsum= 10056 
+Anhydrite= 841 
+Hemihydrate= 11579 
+Pozzolan= 0 
+Inert= 0 
+Slag= 0 
+CaCO3= 0 
+Fly Ash= 0 
+Aggregate= 0 
+ 
+ Input User Choice 
+1) Exit 
+2) Add spherical particles (cement,gypsum, pozzolans, etc.) to microstructure 
+3) Flocculate system by reducing number of particle clusters 
+4) Measure global phase fractions 
+5) Add an aggregate to the microstructure 
+6) Measure single phase connectivity (pores or solids) 
+7) Measure phase fractions vs. distance from aggregate surface 
+8) Output current microstructure to file 
+3 
+Enter number of flocs desired at end of routine (>0) 
+1
+Number left was 367 but number of clusters is 2730 
+Number left was 972 but number of clusters is 2261 
+Number left was 1358 but number of clusters is 1907 
+Number left was 1702 but number of clusters is 1603 
+Number left was 1984 but number of clusters is 1341 
+Number left was 2222 but number of clusters is 1130 
+Number left was 2412 but number of clusters is 969 
+Number left was 2556 but number of clusters is 829 
+Number left was 2687 but number of clusters is 727 
+Number left was 2784 but number of clusters is 626 
+Number left was 2879 but number of clusters is 543 
+Number left was 2947 but number of clusters is 481 
+Number left was 3004 but number of clusters is 425 
+Number left was 3060 but number of clusters is 374 
+Number left was 3107 but number of clusters is 332 
+Number left was 3148 but number of clusters is 291 
+Number left was 3185 but number of clusters is 264 
+Number left was 3213 but number of clusters is 239 
+Number left was 3236 but number of clusters is 217 
+Number left was 3255 but number of clusters is 195 
+Number left was 3277 but number of clusters is 176 
+Number left was 3294 but number of clusters is 166 
+Number left was 3304 but number of clusters is 154 
+Number left was 3315 but number of clusters is 147 
+Number left was 3322 but number of clusters is 139 
+Number left was 3330 but number of clusters is 126 
+Number left was 3343 but number of clusters is 118 
+Number left was 3351 but number of clusters is 110 
+Number left was 3360 but number of clusters is 100 
+Number left was 3370 but number of clusters is 94 
+Number left was 3375 but number of clusters is 84 
+Number left was 3385 but number of clusters is 79 
+Number left was 3390 but number of clusters is 74 
+Number left was 3395 but number of clusters is 70 
+Number left was 3399 but number of clusters is 67 
+Number left was 3402 but number of clusters is 64 
+Number left was 3405 but number of clusters is 62 
+Number left was 3407 but number of clusters is 59 
+Number left was 3410 but number of clusters is 58 
+Number left was 3411 but number of clusters is 57 
+Number left was 3412 but number of clusters is 53 
+Number left was 3416 but number of clusters is 47 
+Number left was 3422 but number of clusters is 45 
+Number left was 3424 but number of clusters is 43 
+Number left was 3426 but number of clusters is 39 
+Number left was 3430 but number of clusters is 37 
+Number left was 3432 but number of clusters is 35 
+Number left was 3434 but number of clusters is 32 
+Number left was 3437 but number of clusters is 31 
+Number left was 3437 but number of clusters is 30 
+Number left was 3439 but number of clusters is 29 
+Number left was 3440 but number of clusters is 27 
+Number left was 3442 but number of clusters is 26 
+Number left was 3442 but number of clusters is 25 
+Number left was 3444 but number of clusters is 24 
+Number left was 3445 but number of clusters is 23 
+Number left was 3445 but number of clusters is 21 
+Number left was 3448 but number of clusters is 20 
+Number left was 3449 but number of clusters is 18 
+Number left was 3450 but number of clusters is 18 
+Number left was 3451 but number of clusters is 17 
+Number left was 3452 but number of clusters is 16 
+Number left was 3453 but number of clusters is 15 
+Number left was 3454 but number of clusters is 14 
+Number left was 3455 but number of clusters is 13 
+Number left was 3455 but number of clusters is 13 
+Number left was 3456 but number of clusters is 12 
+Number left was 3457 but number of clusters is 10 
+Number left was 3458 but number of clusters is 10 
+Number left was 3458 but number of clusters is 10 
+Number left was 3458 but number of clusters is 9 
+Number left was 3459 but number of clusters is 9 
+Number left was 3459 but number of clusters is 9 
+Number left was 3459 but number of clusters is 9 
+Number left was 3459 but number of clusters is 9 
+Number left was 3460 but number of clusters is 7 
+Number left was 3462 but number of clusters is 5 
+Number left was 3463 but number of clusters is 5 
+Number left was 3463 but number of clusters is 5 
+Number left was 3463 but number of clusters is 5 
+Number left was 3463 but number of clusters is 5 
+Number left was 3463 but number of clusters is 5 
+Number left was 3464 but number of clusters is 4 
+Number left was 3464 but number of clusters is 4 
+Number left was 3464 but number of clusters is 4 
+Number left was 3464 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 3 
+Number left was 3465 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 2 
+Number left was 3466 but number of clusters is 1 
+ 
+ Input User Choice 
+1) Exit 
+2) Add spherical particles (cement,gypsum, pozzolans, etc.) to microstructure 
+3) Flocculate system by reducing number of particle clusters 
+4) Measure global phase fractions 
+5) Add an aggregate to the microstructure 
+6) Measure single phase connectivity (pores or solids) 
+7) Measure phase fractions vs. distance from aggregate surface 
+8) Output current microstructure to file 
+8 
+Enter name of file to save microstructure to 
+results/cem140w04floc.img
+Enter name of file to save particle IDs to 
+results/pcem140w04floc.img
+ 
+ Input User Choice 
+1) Exit 
+2) Add spherical particles (cement,gypsum, pozzolans, etc.) to microstructure 
+3) Flocculate system by reducing number of particle clusters 
+4) Measure global phase fractions 
+5) Add an aggregate to the microstructure 
+6) Measure single phase connectivity (pores or solids) 
+7) Measure phase fractions vs. distance from aggregate surface 
+8) Output current microstructure to file 
+1 
