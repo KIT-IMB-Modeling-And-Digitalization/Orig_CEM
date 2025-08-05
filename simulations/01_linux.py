@@ -92,7 +92,7 @@ disrealnew_input = "\n".join([
     "-2794", # Random number seed
     img1, 
     # Filename containing input 3-D phase ID microstructure
-    "1 2 3 4 5 6 7 28 26",  # Phase assignments for C3S, C2S, etc.
+    "1 2 3 4 5 6 7 28 26",  # Phase assignments for C3S, C2S, etc..
     "35",  # Phase ID for C3A in fly ash particles
     img2, # Filename containing input 3-D particle ID microstructure
     "44990",  # Number of one-pixel particles to add

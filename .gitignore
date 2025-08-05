@@ -3,3 +3,17 @@
 
 # Ignore all 'results_<id>' folders (where id is any number)
 **/results_[0-9]*/
+**/results_*/
+
+# Ignore build and bin folders
+**/build/
+**/bin/
+
+# Ignore Python cache files
+__pycache__/
+**/__pycache__/
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+*.pyd

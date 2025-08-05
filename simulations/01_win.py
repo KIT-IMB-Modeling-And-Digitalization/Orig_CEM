@@ -44,7 +44,7 @@ genpartnew_input = "\n".join([
     "5", "9", "1",  # Size class 8
     "8", "8", "1",  # Size class 9
     "13", "7", "1",  # Size class 10
-    "21", "6", "1",  # Size class 11
+    "21", "6", "1",  # Size class 11 
     "38", "5", "1",  # Size class 12
     "73", "4", "1",  # Size class 13
     "174", "3", "1",  # Size class 14
