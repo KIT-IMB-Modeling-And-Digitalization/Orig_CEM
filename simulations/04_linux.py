@@ -3,7 +3,7 @@ import os
 import shutil
 from linux_func import *
 
-id = "03"
+id = "05"
 
 # === Setup paths ===
 base_dir = os.path.dirname(os.path.abspath(__file__))          # → simulations/
@@ -11,10 +11,10 @@ parent_dir = os.path.abspath(os.path.join(base_dir, ".."))    # → Smart03 or G
 src = os.path.join(parent_dir, "scripts")
 dst = os.path.join(parent_dir, f"scripts_{id}")
 
-# === Copy the entire folder ===
+ # === Copy the entire folder ===
 if os.path.exists(dst):
     shutil.rmtree(dst)
-subprocess.run(["cp", "-r", src, dst], check=True)
+shutil.copytree(src, dst)
 src_path = os.path.abspath(os.path.join(base_dir,"..", "scripts_%s" % id))
 
 
@@ -118,7 +118,11 @@ def main():
             print(f"[DEBUG] Moved output: {fname} → results/")
         except Exception as e:
             print(f"⚠️ Failed to move {fname}: {e}")
-
+    try:
+        shutil.rmtree(src_path)
+        print(f"[DEBUG] Removed temporary folder: {src_path}")
+    except Exception as e:
+        print(f"⚠️ Failed to remove {src_path}: {e}")
 
 if __name__ == "__main__":
     main()

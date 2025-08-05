@@ -7,14 +7,14 @@ id = "03"
 
 # === Setup paths ===
 base_dir = os.path.dirname(os.path.abspath(__file__))          # → simulations/
-parent_dir = os.path.abspath(os.path.join(base_dir, ".."))    # → Smart03 or Github_version
-src = os.path.join(parent_dir, "scripts")
-dst = os.path.join(parent_dir, f"scripts_{id}")
+# parent_dir = os.path.abspath(os.path.join(base_dir, ".."))    # → Smart03 or Github_version
+# src = os.path.join(parent_dir, "scripts")
+# dst = os.path.join(parent_dir, f"scripts")
 
-# === Copy the entire folder ===
-if os.path.exists(dst):
-    shutil.rmtree(dst)
-subprocess.run(["cp", "-r", src, dst], check=True)
+# # === Copy the entire folder ===
+# if os.path.exists(dst):
+#     shutil.rmtree(dst)
+# shutil.copytree(src, dst)
 src_path = os.path.abspath(os.path.join(base_dir,"..", "scripts_%s" % id))
 
 
