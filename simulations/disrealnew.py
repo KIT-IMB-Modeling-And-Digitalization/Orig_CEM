@@ -3,16 +3,17 @@ import os
 import shutil
 
 # === Setup paths ===
-base_dir = os.path.dirname(os.path.abspath(__file__))        # scripts/
-bin_path = os.path.join(base_dir, "..", "bin")               # bin/
-src_path = os.path.join(base_dir, "..", "src")               # src/
-results_dir = os.path.join(base_dir, "results")              # scripts/results/
-disrealnew_path = os.path.abspath(os.path.join(bin_path, "disrealnew"))
+base_dir = os.path.dirname(os.path.abspath(__file__))           # scripts/
+bin_path = os.path.join(base_dir, "..", "bin")                  # bin/
+src_path = os.path.join(base_dir, "..", "scripts")              # scripts/
+results_dir = os.path.join(base_dir, "results")                 # scripts/results/
+disrealnew_path = os.path.join(bin_path, "Release", "disrealnew.exe")
 output_log = os.path.join(src_path, "disrealnew.out")
 
 # === Use simple filenames ===
-img1 = "cement140w04flocf.img"
-img2 = "pcem140w04floc.img"
+img1 = "cement1400w04flocf.img"
+img2 = "pcem1400w04floc.img"
+
 
 # === Copy input files to src temporarily ===
 for fname in [img1, img2]:
@@ -73,30 +74,31 @@ def run_executable(executable, input_data, output_file, cwd=None):
         print(f"✅ Execution completed for {executable}, output saved to {output_file}")
 
 # === Print and run ===
-for idx, line in enumerate(disrealnew_input.strip().split("\n"), 1):
-    print(f"[INPUT {idx:02}] {line}")
+# for idx, line in enumerate(disrealnew_input.strip().split("\n"), 1):
+#     print(f"[INPUT {idx:02}] {line}")
 
-run_executable(disrealnew_path, disrealnew_input, output_log, cwd=src_path)
+if __name__ == "__main__":
+    run_executable(disrealnew_path, disrealnew_input, output_log, cwd=src_path)
 
 # === Detect and move new output files to results ===
-after_files = set(os.listdir(src_path))
-new_files = after_files - before_files
+# after_files = set(os.listdir(src_path))
+# new_files = after_files - before_files
 
-for fname in new_files:
-    src = os.path.join(src_path, fname)
-    dst = os.path.join(results_dir, fname)
-    try:
-        shutil.move(src, dst)
-        print(f"[DEBUG] Moved output: {fname} → results/")
-    except Exception as e:
-        print(f"⚠️ Failed to move {fname}: {e}")
+# for fname in new_files:
+#     src = os.path.join(src_path, fname)
+#     dst = os.path.join(results_dir, fname)
+#     try:
+#         shutil.move(src, dst)
+#         print(f"[DEBUG] Moved output: {fname} → results/")
+#     except Exception as e:
+#         print(f"⚠️ Failed to move {fname}: {e}")
 
-# === Clean up input files in src ===
-for fname in [img1, img2]:
-    path = os.path.join(src_path, fname)
-    try:
-        if os.path.exists(path):
-            os.remove(path)
-            print(f"[DEBUG] Cleaned up {fname} from src/")
-    except Exception as e:
-        print(f"⚠️ Failed to remove {fname}: {e}")
+# # === Clean up input files in src ===
+# for fname in [img1, img2]:
+#     path = os.path.join(src_path, fname)
+#     try:
+#         if os.path.exists(path):
+#             os.remove(path)
+#             print(f"[DEBUG] Cleaned up {fname} from src/")
+#     except Exception as e:
+#         print(f"⚠️ Failed to remove {fname}: {e}")

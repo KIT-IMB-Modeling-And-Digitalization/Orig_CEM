@@ -2616,7 +2616,7 @@ int main()
         snprintf(phname,80,"%s.pha.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
         snprintf(ppsname,80,"%s.pps.%d.%d.%1d%1d%1d",fileroot,ncyc,(int)temp_0,csh2flag,adiaflag,sealed);
         /* Store parameters input in parameter file */
-        sprintf(cmdnew,"cp disrealnew.out %s",parname);
+        sprintf(cmdnew,"copy disrealnew.out %s",parname);
         system(cmdnew);
         if(burnfreq<=ncyc){
            ptmpfile=fopen(ppsname,"w");

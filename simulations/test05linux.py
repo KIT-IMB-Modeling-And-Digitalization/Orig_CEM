@@ -1,25 +1,37 @@
 import subprocess
 import os
+import shutil
 
 # === Setup paths ===
 base_dir = os.path.dirname(os.path.abspath(__file__))        # scripts/
 bin_path = os.path.join(base_dir, "..", "bin")               # bin/
-src_path = os.path.join(base_dir, "..", "src")               # src/
+src_path = os.path.join(base_dir, "..", "scripts")               # src/
 results_dir = os.path.join(base_dir, "results")              # scripts/results/
 disrealnew_path = os.path.abspath(os.path.join(bin_path, "disrealnew"))
-output_log = os.path.join(results_dir, "disrealnew.out")     # Save output here now
+output_log = os.path.join(src_path, "disrealnew.out")
 
-# === Full paths relative to src/ ===
-img1_path = os.path.relpath(os.path.join(results_dir, "cement140w04flocf.img"), src_path)
-img2_path = os.path.relpath(os.path.join(results_dir, "pcem140w04floc.img"), src_path)
+# === Use simple filenames ===
+img1 = "cement140w04flocf.img"
+img2 = "pcem140w04floc.img"
+
+# === Copy input files to src temporarily ===
+for fname in [img1, img2]:
+    src = os.path.join(results_dir, fname)
+    dst = os.path.join(src_path, fname)
+    if not os.path.exists(dst):
+        shutil.copy2(src, dst)
+        print(f"[DEBUG] Copied {fname} → src/")
+
+# === Capture list of files in src before execution ===
+before_files = set(os.listdir(src_path))
 
 # === Prepare input data ===
 disrealnew_input = "\n".join([
     "-2794",
-    img1_path,
+    img1,
     "1 2 3 4 5 6 7 28 26",
     "35",
-    img2_path,
+    img2,
     "44990", "1",
     "5850", "2",
     "8692", "3",
@@ -65,3 +77,26 @@ for idx, line in enumerate(disrealnew_input.strip().split("\n"), 1):
     print(f"[INPUT {idx:02}] {line}")
 
 run_executable(disrealnew_path, disrealnew_input, output_log, cwd=src_path)
+
+# === Detect and move new output files to results ===
+after_files = set(os.listdir(src_path))
+new_files = after_files - before_files
+
+for fname in new_files:
+    src = os.path.join(src_path, fname)
+    dst = os.path.join(results_dir, fname)
+    try:
+        shutil.move(src, dst)
+        print(f"[DEBUG] Moved output: {fname} → results/")
+    except Exception as e:
+        print(f"⚠️ Failed to move {fname}: {e}")
+
+# === Clean up input files in src ===
+for fname in [img1, img2]:
+    path = os.path.join(src_path, fname)
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+            print(f"[DEBUG] Cleaned up {fname} from src/")
+    except Exception as e:
+        print(f"⚠️ Failed to remove {fname}: {e}")

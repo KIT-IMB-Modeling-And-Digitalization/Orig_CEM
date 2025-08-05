@@ -4,7 +4,7 @@ import os
 # === Setup paths ===
 base_dir = os.path.dirname(os.path.abspath(__file__))           # scripts/
 bin_path = os.path.join(base_dir, "..", "bin")                  # bin/
-src_path = os.path.join(base_dir, "..", "src")                  # src/
+src_path = os.path.join(base_dir, "..", "scripts")                  # src/
 results_dir = os.path.join(base_dir, "results")                 # scripts/results/
 distrib3d_path = os.path.join(bin_path, "distrib3d")
 output_log = os.path.join(results_dir, "distrib3d.out")
@@ -33,9 +33,9 @@ def run_executable_with_cwd(executable, input_data, output_file, cwd=None):
 # === Input for distrib3d ===
 distrib3d_input = "\n".join([
     "-99",
-    "../scripts/results/cem140w04floc.img",
+    "../simulations/results/cem140w04floc.img",
     "cement140",
-    "../scripts/results/cement140w04flocf.img",
+    "../simulations/results/cement140w04flocf.img",
     "0.7344", "0.6869", "0.0938", "0.1337",
     "0.1311", "0.1386", "0.0407", "0.0408"
 ]) + "\n"
