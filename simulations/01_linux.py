@@ -3,9 +3,19 @@ import os
 import shutil
 from linux_func import *
 
+id = "05"
+
 # === Setup paths ===
 base_dir = os.path.dirname(os.path.abspath(__file__))          # → simulations/
-src_path = os.path.abspath(os.path.join(base_dir, "..", "scripts"))
+parent_dir = os.path.abspath(os.path.join(base_dir, ".."))    # → Smart03 or Github_version
+src = os.path.join(parent_dir, "scripts")
+dst = os.path.join(parent_dir, f"scripts_{id}")
+
+ # === Copy the entire folder ===
+if os.path.exists(dst):
+    shutil.rmtree(dst)
+shutil.copytree(src, dst)
+src_path = os.path.abspath(os.path.join(base_dir,"..", "scripts_%s" % id))
 
 
 #base_dir = os.path.dirname(os.path.abspath(__file__))  # simulations/
@@ -80,7 +90,7 @@ disrealnew_input = "\n".join([
 
 
 def main():
-    results_dir = os.path.join(base_dir, "results")
+    results_dir = os.path.join(base_dir, "results_%s" % id)
     os.makedirs(results_dir, exist_ok=True)
 
     # Output text file for stdout
@@ -108,7 +118,11 @@ def main():
             print(f"[DEBUG] Moved output: {fname} → results/")
         except Exception as e:
             print(f"⚠️ Failed to move {fname}: {e}")
-
+    try:
+        shutil.rmtree(src_path)
+        print(f"[DEBUG] Removed temporary folder: {src_path}")
+    except Exception as e:
+        print(f"⚠️ Failed to remove {src_path}: {e}")
 
 if __name__ == "__main__":
     main()
