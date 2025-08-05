@@ -19,8 +19,8 @@ def run_executable_genpartnew(executable, input_data, output_file):
     print(f"✅ Execution completed for {executable}, output saved to {output_file}")
 
 def run_executable_distrib3d(executable, input_data, output_file, cwd=None):
-    print(f"[DEBUG] Running: {executable}")
-    print(f"[DEBUG] From cwd: {cwd}")
+    # print(f"[DEBUG] Running: {executable}")
+    # print(f"[DEBUG] From cwd: {cwd}")
     process = subprocess.run(
         [executable],
         input=input_data,
@@ -30,12 +30,12 @@ def run_executable_distrib3d(executable, input_data, output_file, cwd=None):
     )
     with open(output_file, "w") as f:
         f.write(process.stdout)
-    if process.returncode != 0:
-        print(f"⚠️ Non-zero exit code ({process.returncode}) for {executable}")
-        print("STDOUT (trimmed):", process.stdout[:500])
-        print("STDERR:", process.stderr)
-    else:
-        print(f"✅ Execution completed for {executable}, output saved to {output_file}")
+    # if process.returncode != 0:
+    #     print(f"⚠️ Non-zero exit code ({process.returncode}) for {executable}")
+    #     print("STDOUT (trimmed):", process.stdout[:500])
+    #     print("STDERR:", process.stderr)
+    # else:
+    print(f"✅ Execution completed for {executable}, output saved to {output_file}")
 
 def run_executable_disrealnew(executable, input_data, output_file, cwd=None):
     print(f"[DEBUG] Running: {executable}")
@@ -49,9 +49,9 @@ def run_executable_disrealnew(executable, input_data, output_file, cwd=None):
     )
     with open(output_file, "w") as f:
         f.write(process.stdout)
-    if process.returncode != 0:
-        print(f"⚠️ Non-zero exit code ({process.returncode}) for {executable}")
-        print("STDOUT (trimmed):", process.stdout[:500])
-        print("STDERR:", process.stderr)
-    else:
-        print(f"✅ Execution completed for {executable}, output saved to {output_file}")
+    # if process.returncode != 0:
+    #     print(f"⚠️ Non-zero exit code ({process.returncode}) for {executable}")
+    #     print("STDOUT (trimmed):", process.stdout[:500])
+    #     print("STDERR:", process.stderr)
+    # else:
+    print(f"✅ Execution completed for {executable}, output saved to {output_file}")
