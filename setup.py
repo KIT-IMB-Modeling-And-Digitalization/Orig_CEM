@@ -1,15 +1,19 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.build_ext import build_ext
 import os
 import subprocess
 import platform
 import shutil
 
+PKG_NAME = "cement_sim"
+PKG_SRC_DIR = os.path.join(os.path.dirname(__file__), "src", PKG_NAME)
+PKG_BIN_DIR = os.path.join(PKG_SRC_DIR, "bin")  # executables go here
+
 class BuildExecutables(build_ext):
     def run(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        src_dir  = os.path.join(base_dir, 'scripts')
-        bin_dir  = os.path.join(base_dir, 'bin')
+        src_dir  = os.path.join(base_dir, 'scripts')              # your C sources stay here
+        bin_dir  = PKG_BIN_DIR                                    # <-- build into the package
         os.makedirs(bin_dir, exist_ok=True)
 
         is_windows = platform.system() == "Windows"
@@ -31,7 +35,7 @@ class BuildExecutables(build_ext):
                 print(f"[Linux] Compiling {src} -> {out} with flags: {opts}")
                 if subprocess.run(f"gcc {src} -o {out} {opts}", shell=True).returncode:
                     raise RuntimeError(f"❌ Failed to compile {src}")
-            print("✅ All Linux executables compiled successfully.")
+            print("✅ All Linux executables compiled successfully into package bin/.")
 
         # ---------- W I N D O W S   B U I L D ----------
         elif is_windows:
@@ -41,7 +45,7 @@ class BuildExecutables(build_ext):
             for exe in executables:
                 src_file  = os.path.join(src_dir, f"{exe}.c").replace("\\", "/")
                 build_dir = os.path.join(base_dir, f"build_{exe}")
-                bin_cmake = bin_dir.replace("\\", "/")
+                bin_cmake = PKG_BIN_DIR.replace("\\", "/")
 
                 if os.path.exists(build_dir):
                     shutil.rmtree(build_dir)
@@ -73,26 +77,39 @@ set_target_properties({exe} PROPERTIES
                     'cmake --build . --config Release',
                     cwd=build_dir, shell=True, check=True
                 )
-                        # Group all individual build folders into one 'build' directory
-            final_build_dir = os.path.join(base_dir, "build")
-            os.makedirs(final_build_dir, exist_ok=True)
-            for exe in executables:
-                src = os.path.join(base_dir, f"build_{exe}")
-                dst = os.path.join(final_build_dir, f"build_{exe}")
-                if os.path.exists(dst):
-                    shutil.rmtree(dst)
-                shutil.move(src, dst)
 
-            print("✅ All Windows executables compiled with Visual Studio + CMake.")
+            print("✅ All Windows executables compiled into package bin/.")
 
         else:
             raise RuntimeError(f"⚠️ Unsupported platform: {platform.system()}")
 
+        # Continue with the normal build_ext pipeline
+        super().run()
+
 setup(
-    name        = "cement_sim",
-    version     = "0.4",
-    description = "Compile C files from scripts to bin (Linux & Windows)",
+    name        = "cement-sim",
+    version     = "0.5.0",
+    description = "Cement simulation tools packaged with three native executables",
     cmdclass    = {"build_ext": BuildExecutables},
-    packages    = [], #try to implement
-    py_modules  = [],
+
+    # --- packaging: src-layout with a real package ---
+    package_dir = {"": "src"},
+    packages    = find_packages("src"),
+    include_package_data = True,
+
+    # include the built executables inside the wheel/install
+    package_data = {
+        PKG_NAME: ["bin/*"],      # ship the 3 compiled binaries
+    },
+
+    # expose convenient CLI commands for users
+    entry_points = {
+        "console_scripts": [
+            "genpartnew=cement_sim.cli:run_genpartnew",
+            "distrib3d=cement_sim.cli:run_distrib3d",
+            "disrealnew=cement_sim.cli:run_disrealnew",
+        ]
+    },
+
+    python_requires = ">=3.8",
 )
