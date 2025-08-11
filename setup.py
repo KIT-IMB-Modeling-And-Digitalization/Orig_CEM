@@ -93,6 +93,6 @@ setup(
     version     = "0.4",
     description = "Compile C files from scripts to bin (Linux & Windows)",
     cmdclass    = {"build_ext": BuildExecutables},
-    packages    = [],
+    packages    = [], #try to implement
     py_modules  = [],
 )
