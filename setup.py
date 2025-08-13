@@ -1,11 +1,11 @@
 from setuptools import setup
-from setuptools.command.build_ext import build_ext
+from setuptools.command.build_ext import Command
 import os
 import subprocess
 import platform
 import shutil
 
-class BuildExecutables(build_ext):
+class BuildExecutables(Command):
     def run(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         src_dir  = os.path.join(base_dir, 'scripts')
@@ -96,3 +96,4 @@ setup(
     packages    = [],
     py_modules  = [],
 )
+
