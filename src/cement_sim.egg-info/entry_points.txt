@@ -1,4 +1,0 @@
-[console_scripts]
-disrealnew = cement_sim.cli:run_disrealnew
-distrib3d = cement_sim.cli:run_distrib3d
-genpartnew = cement_sim.cli:run_genpartnew

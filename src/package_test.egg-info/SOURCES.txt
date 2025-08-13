@@ -1,0 +1,9 @@
+pyproject.toml
+setup.py
+src/package_test/__init__.py
+src/package_test/core.py
+src/package_test.egg-info/PKG-INFO
+src/package_test.egg-info/SOURCES.txt
+src/package_test.egg-info/dependency_links.txt
+src/package_test.egg-info/top_level.txt
+src/package_test/_bin/genpartnew
