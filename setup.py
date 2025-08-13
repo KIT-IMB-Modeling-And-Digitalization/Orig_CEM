@@ -1,9 +1,14 @@
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py as _build_py
-from pathlib import Path
-import subprocess, shutil, os, platform, sys
+try:
+    from setuptools.command.build_editable import build_editable as _build_editable
+except ImportError:
+    _build_editable = None
 
-# ---- settings you might tweak ------------------------------------------------
+from pathlib import Path
+import subprocess, shutil, os, platform
+
+# ---- settings --------------------------------------------------------------
 SRC_DIR = Path("csrc")                 # C sources live here
 TARGET_NAME = "genpartnew"             # the executable we want to build
 PACKAGE = "package_test"               # your package name under src/
@@ -24,11 +29,8 @@ def compile_executable(build_temp: Path, exe_out: Path):
         # Prefer Microsoft cl.exe if available; otherwise try gcc (MinGW).
         cl = shutil.which("cl.exe")
         if cl:
-            # MSVC: compile & link in one step
-            # /Fe sets exe name, /Ox optimize; adjust flags as needed
             cmd = ["cl.exe", "/nologo", "/Ox", "/Fe:" + str(exe_out)] + sources
             env = os.environ.copy()
-            # Ensure output dir exists; cl will drop .obj in cwd => use build_temp
             subprocess.check_call(cmd, cwd=str(build_temp), env=env)
         else:
             gcc = shutil.which("gcc") or shutil.which("clang")
@@ -37,34 +39,48 @@ def compile_executable(build_temp: Path, exe_out: Path):
             cmd = [gcc, "-O3", "-o", str(exe_out)] + sources
             subprocess.check_call(cmd, cwd=str(build_temp))
     else:
-        # POSIX: gcc/clang with -lm is common
         cc = shutil.which("cc") or shutil.which("gcc") or shutil.which("clang")
         if not cc:
             raise RuntimeError("No C compiler found (need cc/gcc/clang).")
         cmd = [cc, "-O3", "-o", str(exe_out)] + sources + ["-lm"]
         subprocess.check_call(cmd, cwd=str(build_temp))
 
+def _build_into(build_dir: Path):
+    """Shared logic for both build_py and build_editable"""
+    bin_dir = build_dir / PACKAGE / BIN_DIR_IN_PKG
+    bin_dir.mkdir(parents=True, exist_ok=True)
+
+    exe_name = TARGET_NAME + (".exe" if platform.system() == "Windows" else "")
+    exe_out = bin_dir / exe_name
+
+    build_temp = build_dir / "_build_bins"
+    compile_executable(build_temp, exe_out)
+
+    if os.name == "posix":
+        exe_out.chmod(exe_out.stat().st_mode | 0o111)
+
+    # Also copy to source tree so editable installs work
+    src_bin_dir = Path("src") / PACKAGE / BIN_DIR_IN_PKG
+    src_bin_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(exe_out, src_bin_dir / exe_name)
+
+    print(f"[build] built {exe_out} and copied to {src_bin_dir / exe_name}")
+
 class build_py(_build_py):
     def run(self):
-        # 1) run normal Python build first
         super().run()
+        _build_into(Path(self.build_lib))
 
-        # 2) build the executable into the build_lib package dir
-        bin_dir = Path(self.build_lib) / PACKAGE / BIN_DIR_IN_PKG
-        bin_dir.mkdir(parents=True, exist_ok=True)
+if _build_editable:
+    class build_editable(_build_editable):
+        def run(self):
+            super().run()
+            _build_into(Path(self.build_lib))
+    cmdclass = {"build_py": build_py, "build_editable": build_editable}
+else:
+    cmdclass = {"build_py": build_py}
 
-        exe_name = TARGET_NAME + (".exe" if platform.system() == "Windows" else "")
-        exe_out = bin_dir / exe_name
-
-        # Use a temporary build dir to hold intermediates/objects
-        build_temp = Path(self.build_lib) / "_build_bins"
-        compile_executable(build_temp, exe_out)
-
-        # Make sure it’s executable on POSIX
-        if os.name == "posix":
-            exe_out.chmod(exe_out.stat().st_mode | 0o111)
-
-        print(f"[build_py] built {exe_out}")
+# ---- main setup() ----------------------------------------------------------
 
 setup(
     name="package-test",
@@ -73,6 +89,6 @@ setup(
     packages=find_packages(where="src"),
     python_requires=">=3.9",
     include_package_data=True,
-    package_data={"package_test": ["_bin/*"]},  # ship whatever ends up in _bin
-    cmdclass={"build_py": build_py},            # <-- hook our custom build step
+    package_data={"package_test": ["_bin/*"]},
+    cmdclass=cmdclass,
 )
