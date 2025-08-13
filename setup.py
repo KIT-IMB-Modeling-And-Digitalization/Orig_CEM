@@ -87,7 +87,7 @@ set_target_properties({exe} PROPERTIES
 
         else:
             raise RuntimeError(f"⚠️ Unsupported platform: {platform.system()}")
-    #copy files to folder ./bin
+    #TODO: create ./bin folder and copy files to folder ./bin
 
 setup(
     name        = "cement_sim",
@@ -98,6 +98,10 @@ setup(
         },
     packages    = [],
     py_modules  = [],
+    #TODO: aadd package data here ./bin file
 )
 
+#TODO: two step compilation 
+#python setup.py build_exe
+#pip install . (copies files to the site-packages folder) where other python packages are !!
 
