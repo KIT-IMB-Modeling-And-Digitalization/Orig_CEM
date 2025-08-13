@@ -1,11 +1,14 @@
 from setuptools import setup
-from setuptools.command.build_ext import Command
+from setuptools import Command
 import os
 import subprocess
 import platform
 import shutil
 
 class BuildExecutables(Command):
+    user_options = []
+    def initialize_options(self): pass
+    def finalize_options(self): pass
     def run(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         src_dir  = os.path.join(base_dir, 'scripts')
@@ -88,6 +91,26 @@ set_target_properties({exe} PROPERTIES
         else:
             raise RuntimeError(f"⚠️ Unsupported platform: {platform.system()}")
     #TODO: create ./bin folder and copy files to folder ./bin,         shutil.copy(join(fpath,'lib','libiphreeqc.so'),join(current_path,'src','IPhreeqcPy','lib'))
+    # Create _bin directory inside src/package-test
+        pkg_dir = os.path.join(base_dir, 'src', 'package-test')
+        bin_dir_pkg = os.path.join(pkg_dir, '_bin')
+        os.makedirs(bin_dir_pkg, exist_ok=True)
+
+        for exe in executables:
+            compiled_path = os.path.join(bin_dir, exe)
+            if os.path.isfile(compiled_path):
+                shutil.copy(compiled_path, bin_dir_pkg)
+
+        if os.path.exists(bin_dir):
+            shutil.rmtree(bin_dir)
+
+        # Copy everything from scripts into _bin so executables can run in-place
+        for root, _, files in os.walk(src_dir):
+            rel_path = os.path.relpath(root, src_dir)
+            dest_dir = os.path.join(bin_dir_pkg, rel_path) if rel_path != '.' else bin_dir_pkg
+            os.makedirs(dest_dir, exist_ok=True)
+            for f in files:
+                shutil.copy(os.path.join(root, f), os.path.join(dest_dir, f))
 
 setup(
     name        = "cement_sim",
