@@ -26,3 +26,24 @@ def run_genpartnew(args=None):
     # Run the executable, streaming output to the console
     result = subprocess.run(cmd, check=False)
     return result.returncode
+
+def run_distrib3d(args=None):
+    """
+    Run the packaged distrib3d executable with optional arguments.
+    If args is None, runs without arguments.
+    """
+    exe_name = "distrib3d.exe" if platform.system() == "Windows" else "distrib3d"
+    exe_path = res.files("package_test") / "_bin" / exe_name
+
+    if not exe_path.exists():
+        raise FileNotFoundError(f"Executable not found: {exe_path}")
+
+    cmd = [str(exe_path)]
+    if args:
+        if isinstance(args, str):
+            cmd.append(args)
+        else:
+            cmd.extend(args)
+
+    result = subprocess.run(cmd, check=False)
+    return result.returncode
