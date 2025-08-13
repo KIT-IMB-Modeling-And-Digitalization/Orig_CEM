@@ -87,13 +87,17 @@ set_target_properties({exe} PROPERTIES
 
         else:
             raise RuntimeError(f"⚠️ Unsupported platform: {platform.system()}")
+    #copy files to folder ./bin
 
 setup(
     name        = "cement_sim",
     version     = "0.4",
     description = "Compile C files from scripts to bin (Linux & Windows)",
-    cmdclass    = {"build_ext": BuildExecutables},
+    cmdclass={
+            'build_exe': BuildExecutables,
+        },
     packages    = [],
     py_modules  = [],
 )
+
 
