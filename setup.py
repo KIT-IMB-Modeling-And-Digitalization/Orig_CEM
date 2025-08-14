@@ -91,8 +91,8 @@ set_target_properties({exe} PROPERTIES
         else:
             raise RuntimeError(f"⚠️ Unsupported platform: {platform.system()}")
     #TODO: create ./bin folder and copy files to folder ./bin,         shutil.copy(join(fpath,'lib','libiphreeqc.so'),join(current_path,'src','IPhreeqcPy','lib'))
-    # Create _bin directory inside src/package-test
-        pkg_dir = os.path.join(base_dir, 'src', 'package-test')
+    # Create _bin directory inside src/package_test
+        pkg_dir = os.path.join(base_dir, 'src', 'package_test')
         bin_dir_pkg = os.path.join(pkg_dir, '_bin')
         os.makedirs(bin_dir_pkg, exist_ok=True)
 
@@ -119,7 +119,12 @@ setup(
     cmdclass={
             'build_exe': BuildExecutables,
         },
-    packages    = [],
+    packages=['package_test'],
+    package_dir={'': 'src'},
+    package_data={
+        'package_test': ['_bin/*', '_bin/**/*']
+    },
+    include_package_data=True,
     py_modules  = [],
     #TODO: aadd package data here ./bin file
     #mkdir(), rmdir/shutil.rm #delete folder #copy
