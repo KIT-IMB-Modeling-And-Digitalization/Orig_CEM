@@ -1,44 +1,160 @@
 import package_test.module as m
-from pathlib import Path
 from tempfile import NamedTemporaryFile
-import os, shutil, sys, subprocess
+from pathlib import Path
+import os, uuid, subprocess, shutil
 
-here = Path.cwd()
+# ---- New: run ID and results folder next to this script ----
+id = "01"  # choose your run label
+script_dir = Path(__file__).parent.resolve()
+results_dir = script_dir / f"result_{id}"
+results_dir.mkdir(parents=True, exist_ok=True)
+
+# Installed _bin (where the executable + assets live)
 bin_dir = Path(getattr(m, "_BIN_DIR", Path(m.__file__).parent / "_bin")).resolve()
 
-# Inputs expected next to this script (your working dir)
-inp_phase = (here / "cem140w04floc.img").resolve()
-inp_part  = (here / "pcem140w04floc.img").resolve()
-if not inp_phase.exists():
-    sys.exit(f"[disrealnew] Missing input image (phase IDs): {inp_phase}")
-if not inp_part.exists():
-    sys.exit(f"[disrealnew] Missing input image (particle IDs): {inp_part}")
+# Per-run folder inside _bin (short + unique)
+run_id  = "gp_" + uuid.uuid4().hex[:6]
+run_dir = bin_dir / run_id
+run_dir.mkdir(parents=False, exist_ok=False)
 
-# Short names inside _bin
-name_phase = inp_phase.name
-name_part  = inp_part.name
+# Use ONLY short filenames in stdin (we'll run with cwd=run_dir)
+genpartnew_input = "\n".join([
+    "-3034",
+    "2",
+    "16",
+    "0",
+    "0.0604",
+    "0.515 0.041",
+    "1","17","1",
+    "1","15","1",
+    "1","14","1",
+    "1","13","1",
+    "2","12","1",
+    "2","11","1",
+    "4","10","1",
+    "5","9","1",
+    "8","8","1",
+    "13","7","1",
+    "21","6","1",
+    "38","5","1",
+    "73","4","1",
+    "174","3","1",
+    "450","2","1",
+    "2674","1","1",
+    "4",
+    "3",
+    "1",
+    "8",
+    f"cem140w04floc_{id}.img",      # short names (no long absolute paths)
+    f"pcem140w04floc_{id}.img",
+    "1"
+])
 
-# Snapshot files in _bin before we run
-pre_files = {p.name for p in bin_dir.iterdir() if p.is_file()}
+# Write input to a temp file
+with NamedTemporaryFile('w+', delete=False) as f:
+    f.write(genpartnew_input.rstrip() + "\n")
+    temp_in = f.name
 
-# Make inputs visible in _bin via short names
-link_phase = bin_dir / name_phase
-link_part  = bin_dir / name_part
-for src, dst in [(inp_phase, link_phase), (inp_part, link_part)]:
-    if dst.exists() or dst.is_symlink():
-        dst.unlink()
-    try:
-        os.symlink(src, dst)
-    except OSError:
-        shutil.copy(src, dst)
+# Run inside the per-run folder; capture all terminal output to genpartnew.out
+exe = bin_dir / "genpartnew"
+log_path = run_dir / f"genpartnew_{id}.out"
+with open(temp_in, "rb") as fin, open(log_path, "wb") as flog:
+    subprocess.run([str(exe)], stdin=fin, stdout=flog, stderr=subprocess.STDOUT,
+                   check=True, cwd=run_dir)
 
-# Build stdin using only basenames (short names)
+# Temp file cleanup (optional)
+try:
+    os.remove(temp_in)
+except OSError:
+    pass
+
+# Copy outputs + log into result_{id} (keep originals in _bin)
+for name in [f"cem140w04floc_{id}.img", f"pcem140w04floc_{id}.img", f"genpartnew_{id}.out"]:
+    src = run_dir / name
+    if src.exists():
+        shutil.copy2(src, results_dir / name)
+
+print(f"[genpartnew] Per-run outputs in: {run_dir}")
+print(f"[genpartnew] Copied to results folder: {results_dir}")
+
+# =========================
+# Append: run distrib3d now
+# =========================
+
+# Build distrib3d stdin to use the SAME per-run folder inside _bin
+# Input is the genpartnew output in run_dir; output also goes to run_dir
+in_name  = f"{run_id}/cem140w04floc_{id}.img"
+out_name = f"{run_id}/cement140w04flocf_{id}.img"
+
+distrib3d_input = "\n".join([
+    "-99",
+    in_name,            # input under the same sandbox
+    "cement140",        # correlation filters root in _bin
+    out_name,           # output under the same sandbox
+    "0.7344",
+    "0.6869",
+    "0.0938",
+    "0.1337",
+    "0.1311",
+    "0.1386",
+    "0.0407",
+    "0.0408"
+])
+
+# Write temp stdin and run distrib3d with cwd=_bin; log to distrib3d.out in run_dir
+with NamedTemporaryFile('w+', delete=False) as f:
+    f.write(distrib3d_input.rstrip() + "\n")
+    temp_in2 = f.name
+
+exe2 = bin_dir / "distrib3d"
+log_path2 = run_dir / f"distrib3d_{id}.out"
+with open(temp_in2, "rb") as fin, open(log_path2, "wb") as flog:
+    subprocess.run([str(exe2)], stdin=fin, stdout=flog, stderr=subprocess.STDOUT,
+                   check=True, cwd=bin_dir)
+
+# Temp file cleanup (optional)
+try:
+    os.remove(temp_in2)
+except OSError:
+    pass
+
+# Optionally copy distrib3d outputs + log to results folder (keeping originals in _bin)
+for name in [f"cement140w04flocf_{id}.img", f"distrib3d_{id}.out"]:
+    src = run_dir / name
+    if src.exists():
+        shutil.copy2(src, results_dir / name)
+
+print(f"[distrib3d] Used sandbox: {run_dir}")
+print(f"[distrib3d] Copied outputs to: {results_dir}")
+
+# =========================
+# Append: run disrealnew now (fixed)
+# =========================
+
+# Inputs for disrealnew come from the SAME per-run folder:
+#  - phase microstructure: cement140w04flocf.img (from distrib3d)
+#  - particle ID microstructure: pcem140w04floc.img (from genpartnew)
+phase_name = f"cement140w04flocf_{id}.img"
+part_name  = f"pcem140w04floc_{id}.img"
+
+phase_path = run_dir / phase_name
+part_path  = run_dir / part_name
+if not phase_path.exists():
+    raise FileNotFoundError(f"[disrealnew] Missing phase microstructure in sandbox: {phase_path}")
+if not part_path.exists():
+    raise FileNotFoundError(f"[disrealnew] Missing particle-ID microstructure in sandbox: {part_path}")
+
+# IMPORTANT: run disrealnew with cwd = _bin so it can find its runtime data there.
+# Use paths prefixed with the per-run folder so reads/writes land in run_dir.
+in_phase = f"{run_id}/{phase_name}"
+in_part  = f"{run_id}/{part_name}"
+
 disrealnew_input = "\n".join([
     "-2794",                    # seed
-    name_phase,                 # 3-D phase ID microstructure
+    in_phase,                   # 3-D phase ID microstructure under run_id/
     "1 2 3 4 5 6 7 28 26",      # phase assignments
     "35",                       # C3A in fly ash ID
-    name_part,                  # 3-D particle ID microstructure
+    in_part,                    # 3-D particle ID microstructure under run_id/
     "44990","1",
     "5850","2",
     "8692","3",
@@ -60,36 +176,45 @@ disrealnew_input = "\n".join([
     "10","1.0","0","0","1"
 ]) + "\n"  # ensure trailing newline
 
-# Write temp stdin
+# Snapshot files in _bin before running (to catch anything disrealnew drops into _bin root)
+pre_files = {p.name for p in bin_dir.iterdir() if p.is_file()}
+
+# Write temp stdin and run with cwd=_bin; log to disrealnew.out inside run_dir
 with NamedTemporaryFile('w+', delete=False) as f:
     f.write(disrealnew_input)
-    temp_in = f.name
+    temp_in3 = f.name
 
-# Run the executable inside _bin so it finds its assets
-exe = bin_dir / "disrealnew"
+exe3 = bin_dir / "disrealnew"
+log_path3 = run_dir / f"disrealnew_{id}.out"
+with open(temp_in3, "rb") as fin, open(log_path3, "wb") as flog:
+    subprocess.run([str(exe3)], stdin=fin, stdout=flog, stderr=subprocess.STDOUT,
+                   check=True, cwd=bin_dir)
+
 try:
-    subprocess.run([str(exe)], stdin=open(temp_in, "rb"), check=True, cwd=bin_dir)
-finally:
-    try: os.remove(temp_in)
-    except OSError: pass
+    os.remove(temp_in3)
+except OSError:
+    pass
 
-# Collect any newly created files in _bin and move them back to your working dir
+# Collect any newly created files that landed in _bin root and move them into the run_dir
 post_files = {p.name for p in bin_dir.iterdir() if p.is_file()}
-new_files = {n for n in (post_files - pre_files) if n not in {name_phase, name_part}}
+for name in sorted(post_files - pre_files):
+    # Skip our inputs (they live in run_dir already)
+    if name in {phase_name, part_name}:
+        continue
+    shutil.move(str(bin_dir / name), str(run_dir / name))
 
-for fname in sorted(new_files):
-    src = bin_dir / fname
-    dst = here / fname
-    try:
-        if dst.exists():
-            dst.unlink()
-        shutil.move(str(src), str(dst))
-    except Exception as e:
-        print(f"[disrealnew] Warning: could not move {src} -> {dst}: {e}")
+print(f"[disrealnew] Completed in sandbox: {run_dir}")
 
-# Cleanup the linked/copied inputs from _bin to keep it tidy
-for p in [link_phase, link_part]:
-    try:
-        p.unlink()
-    except OSError:
-        pass
+# ===========================================================
+# Finalize: copy EVERYTHING from sandbox → results, then remove sandbox
+# ===========================================================
+for item in run_dir.iterdir():
+    dst = results_dir / item.name
+    if item.is_dir():
+        shutil.copytree(item, dst, dirs_exist_ok=True)
+    else:
+        shutil.copy2(item, dst)
+
+shutil.rmtree(run_dir, ignore_errors=True)
+print(f"[finalize] Copied all sandbox files to: {results_dir}")
+print(f"[finalize] Removed sandbox: {run_dir}")
