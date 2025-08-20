@@ -76,7 +76,7 @@ set_target_properties({exe} PROPERTIES
                     'cmake --build . --config Release',
                     cwd=build_dir, shell=True, check=True
                 )
-                        # Group all individual build folders into one 'build' directory
+            # Group all individual build folders into one 'build' directory
             final_build_dir = os.path.join(base_dir, "build")
             os.makedirs(final_build_dir, exist_ok=True)
             for exe in executables:
@@ -90,27 +90,53 @@ set_target_properties({exe} PROPERTIES
 
         else:
             raise RuntimeError(f"⚠️ Unsupported platform: {platform.system()}")
-    #TODO: create ./bin folder and copy files to folder ./bin,         shutil.copy(join(fpath,'lib','libiphreeqc.so'),join(current_path,'src','IPhreeqcPy','lib'))
-    # Create _bin directory inside src/package_test
-        pkg_dir = os.path.join(base_dir, 'src', 'package_test')
-        bin_dir_pkg = os.path.join(pkg_dir, '_bin')
-        os.makedirs(bin_dir_pkg, exist_ok=True)
+    # Create _bin directory inside src/cement_sim
+        if is_linux:
+            pkg_dir = os.path.join(base_dir, 'src', 'cement_sim')
+            bin_dir_pkg = os.path.join(pkg_dir, '_bin')
+            os.makedirs(bin_dir_pkg, exist_ok=True)
 
-        for exe in executables:
-            compiled_path = os.path.join(bin_dir, exe)
-            if os.path.isfile(compiled_path):
-                shutil.copy(compiled_path, bin_dir_pkg)
+            for exe in executables:
+                compiled_path = os.path.join(bin_dir, exe)
+                if os.path.isfile(compiled_path):
+                    shutil.copy(compiled_path, bin_dir_pkg)
 
-        if os.path.exists(bin_dir):
-            shutil.rmtree(bin_dir)
+            if os.path.exists(bin_dir):
+                shutil.rmtree(bin_dir)
 
-        # Copy everything from scripts into _bin so executables can run in-place
-        for root, _, files in os.walk(src_dir):
-            rel_path = os.path.relpath(root, src_dir)
-            dest_dir = os.path.join(bin_dir_pkg, rel_path) if rel_path != '.' else bin_dir_pkg
-            os.makedirs(dest_dir, exist_ok=True)
-            for f in files:
-                shutil.copy(os.path.join(root, f), os.path.join(dest_dir, f))
+            # Copy everything from scripts into _bin so executables can run in-place
+            for root, _, files in os.walk(src_dir):
+                rel_path = os.path.relpath(root, src_dir)
+                dest_dir = os.path.join(bin_dir_pkg, rel_path) if rel_path != '.' else bin_dir_pkg
+                os.makedirs(dest_dir, exist_ok=True)
+                for f in files:
+                    shutil.copy(os.path.join(root, f), os.path.join(dest_dir, f))
+
+        # ---------- Copy compiled Windows executables into src/cement_sim/_bin ----------
+        if is_windows:
+            pkg_dir = os.path.join(base_dir, 'src', 'cement_sim')
+            bin_dir_pkg = os.path.join(pkg_dir, '_bin')
+            os.makedirs(bin_dir_pkg, exist_ok=True)
+
+            for exe in executables:
+                # check both bin\Release\exe.exe and bin\exe.exe
+                exe_name = exe + ".exe"
+                release_path = os.path.join(bin_dir, "Release", exe_name)
+                flat_path    = os.path.join(bin_dir, exe_name)
+
+                if os.path.isfile(release_path):
+                    shutil.copy(release_path, bin_dir_pkg)
+                elif os.path.isfile(flat_path):
+                    shutil.copy(flat_path, bin_dir_pkg)
+
+            # Copy everything from scripts/ into _bin so executables can run in-place
+            for root, _, files in os.walk(src_dir):
+                rel_path = os.path.relpath(root, src_dir)
+                dest_dir = os.path.join(bin_dir_pkg, rel_path) if rel_path != '.' else bin_dir_pkg
+                os.makedirs(dest_dir, exist_ok=True)
+                for f in files:
+                    shutil.copy(os.path.join(root, f), os.path.join(dest_dir, f))
+
 
 setup(
     name        = "cement_sim",
@@ -119,19 +145,14 @@ setup(
     cmdclass={
             'build_exe': BuildExecutables,
         },
-    packages=['package_test'],
+    packages=['cement_sim'],
     package_dir={'': 'src'},
     package_data={
-        'package_test': ['_bin/*', '_bin/**/*']
+        'cement_sim': ['_bin/*', '_bin/**/*']
     },
     include_package_data=True,
     py_modules  = [],
-    #TODO: aadd package data here ./bin file
-    #mkdir(), rmdir/shutil.rm #delete folder #copy
 )
 
-#TODO: two step compilation 
-#python setup.py build_exe
-#pip install . (copies files to the site-packages folder) where other python packages are !!
 
 

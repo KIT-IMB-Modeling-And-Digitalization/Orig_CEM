@@ -1,14 +1,14 @@
-Install using the following command, it will find your OS automatically:
+To compile the c files, run the following command, it will automatically detect your OS:
 
-python setup.py build_ext
+python setup.py build_exe
 
-Then based on your OS pick one of the files in simulations directory - either 01_linux.py or 01_win.py
 
-At the top assign the id to your simulation and then run using the following command:
+And after compilation to install the package run it:
 
-python FILENAME.py
+pip install .
 
-It will automatically create a directory with correlation files and run the simulation till the end and finally moves everything to a directory named results_id within simulations directory.
+Then you would be able to run the simulation script inside simulation folder which is named disrealnew.py
 
-Attention: To run the program in linux terminal, please remain inside linux itself and do not use the mounted directory of windows like /mnt/c/... because it will crash
+and to uninstall use:
 
+pip uninstall cement_sim
