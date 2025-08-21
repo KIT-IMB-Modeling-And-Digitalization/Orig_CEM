@@ -4,6 +4,7 @@
 # Ignore all 'results_<id>' folders (where id is any number)
 **/results_[0-9]*/
 **/results_*/
+**/result_*/
 
 # Ignore build and bin folders
 **/build/

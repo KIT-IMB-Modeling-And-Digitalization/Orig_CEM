@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: cement_sim
+Version: 0.4
+Summary: Compile C files from scripts to bin (Linux & Windows)
+Dynamic: summary
