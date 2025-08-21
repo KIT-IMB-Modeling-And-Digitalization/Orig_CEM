@@ -40,32 +40,66 @@ gp_cfg = {
 
 # === Input for distrib3d ===
 # NOTE: use {RUN}/... because distrib3d runs with cwd=_BIN_DIR
-distrib3d_input = "\n".join([
-    "-99",
-    "{RUN}/cem140w04floc_{ID}.img",
-    "cement140",
-    "{RUN}/cement140w04flocf_{ID}.img",  # fixed name
-    "0.7344","0.6869","0.0938","0.1337","0.1311","0.1386","0.0407","0.0408"
-])
+d3_cfg = {
+    "seed": -99,
+    "in_name":  "cem140w04floc_{ID}.img",      # short name; no path
+    "filters_root": "cement140",
+    "out_name": "cement140w04flocf_{ID}.img",  # short name; no path
+    # order: C3S vf, C3S sa, C2S vf, C2S sa, C3A vf, C3A sa, C4AF vf, C4AF sa
+    "targets": ["0.7344","0.6869","0.0938","0.1337","0.1311","0.1386","0.0407","0.0408"],
+}
+
 
 # === Input for disrealnew ===
 # NOTE: again {RUN}/... because disrealnew runs with cwd=_BIN_DIR
-disrealnew_input = "\n".join([
-    "-2794",
-    "{RUN}/cement140w04flocf_{ID}.img",
-    "1 2 3 4 5 6 7 28 26",
-    "35",
-    "{RUN}/pcem140w04floc_{ID}.img",
-    "44990","1","5850","2","8692","3","2631","4","1100","5","2062","6","839","7",
-    "0",
-    "1000","0","500",
-    "0.0001 9000.","0.01 9000.","0.00002 10000.","0.002 2500.",
-    "50","5","5000","100",
-    "0.00","20.0","20.0","0.0",
-    "40.0","83.14","80.0",
-    "0.00035","0.72",
-    "0","0","1","10","1.0","0","0","1"
-]) + "\n"   # ensure newline at end
+dr_cfg = {
+    "seed": -2794,
+
+    # Files (short names; module will prefix with {RUN}/ and format {ID})
+    "phase_file": "cement140w04flocf_{ID}.img",
+    "part_file":  "pcem140w04floc_{ID}.img",
+
+    # Phase assignments for: C3S C2S C3A C4AF gypsum hemihydrate anhydrite flyash slag
+    # (either list of 9 items or a single space-separated string)
+    "phase_map": [1, 2, 3, 4, 5, 6, 7, 28, 26],
+
+    # Phase ID for C3A in fly ash particles
+    "c3a_fa": 35,
+
+    # One-pixel particles to add: 7 (count, phase_id) pairs
+    "one_px_pairs": [
+        ("44990","1"), ("5850","2"), ("8692","3"),
+        ("2631","4"),  ("1100","5"), ("2062","6"),
+        ("839","7"),
+    ],
+    # The trailing lone count line
+    "one_px_extra": "0",
+
+    # Main controls
+    "cycles": "1000",
+    "sat_flag": "0",
+    "max_diff": "500",
+
+    # Nucleation parameters (4 lines in this order)
+    "nuc_params": ["0.0001 9000.", "0.01 9000.", "0.00002 10000.", "0.002 2500."],
+
+    # Frequencies: [pore_perc, solids_perc, stats_out, micro_out]
+    "freqs": ["50","5","5000","100"],
+
+    # Thermal: [induction_h, T_init_C, T_amb_C, U]
+    "thermal": ["0.00","20.0","20.0","0.0"],
+
+    # Activation energies: [cement, pozz, slag]
+    "Ea": ["40.0","83.14","80.0"],
+
+    "cycle_to_time": "0.00035",
+    "agg_vf": "0.72",
+
+    # Flags (8 lines): isothermal, forbid_CSH, allow_CH_agg, movie_slices,
+    #                  diss_bias, pre_resat_cycles, random_CSH, pH_affects
+    "flags": ["0","0","1","10","1.0","0","0","1"],
+}
+
 
 # Run the pipeline
-m.run_pipeline(id, gp_cfg, distrib3d_input, disrealnew_input)
+m.run_pipeline(id, gp_cfg, d3_cfg, dr_cfg)
