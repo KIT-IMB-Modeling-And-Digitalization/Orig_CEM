@@ -9,7 +9,7 @@ _BIN_DIR = Path(__file__).parent / "_bin"
 def _is_windows():
     return platform.system() == "Windows"
     
-def run_cemhyd3d(sim_id, inputs):
+def run_cemhyd3d(sim_id, inputs:Dict[str:list]):
     """run all three functions""""
     
 def run_genpartnew(input_file):
