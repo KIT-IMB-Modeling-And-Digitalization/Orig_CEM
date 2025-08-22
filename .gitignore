@@ -9,6 +9,7 @@
 # Ignore build and bin folders
 **/build/
 **/bin/
+**/_bin/
 
 # Ignore Python cache files
 __pycache__/

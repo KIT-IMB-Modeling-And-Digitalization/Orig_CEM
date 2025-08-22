@@ -6,18 +6,20 @@ from tempfile import NamedTemporaryFile  # new import for this function
 import uuid, shutil  # new imports used by the function
 
 
-# Path to the _bin folder inside the installed package
-_BIN_DIR = Path(__file__).parent / "_bin"
+# Path to the original _bin inside the installed package (for initial copy)
+_ORIG_BIN_DIR = Path(__file__).parent / "_bin"
+
 
 def _is_windows():
     return platform.system() == "Windows"
-    
+
+
 def run_pipeline(id: str,
                  genpartnew_input: str,
                  distrib3d_input: str,
                  disrealnew_input: str):
 
-    # NEW: put results next to the caller script (fallback to CWD)
+    # results next to the caller script (fallback to CWD)
     try:
         import inspect
         caller_file = Path(inspect.stack()[1].filename).resolve()
@@ -28,13 +30,18 @@ def run_pipeline(id: str,
     results_dir = script_dir / f"result_{id}"
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    bin_dir = Path(_BIN_DIR).resolve()
+    # --- NEW: ensure local _bin exists next to the caller script ---
+    local_bin = script_dir / "_bin"
+    if not local_bin.exists():
+        shutil.copytree(_ORIG_BIN_DIR, local_bin)
+    bin_dir = local_bin.resolve()
+    # --------------------------------------------------------------
 
     run_id  = "gp_" + uuid.uuid4().hex[:6]
     run_dir = bin_dir / run_id
     run_dir.mkdir(parents=False, exist_ok=False)
 
-    # pick exe paths (unchanged) ...
+    # pick exe paths
     if _is_windows():
         exe  = bin_dir / "genpartnew.exe"
         exe2 = bin_dir / "distrib3d.exe"
@@ -311,35 +318,3 @@ def _build_disrealnew_from_dict(id: str, run_id: str, cfg: dict) -> str:
     if not text.endswith("\n"):
         text += "\n"
     return text
-
-def run_genpartnew(input_file):
-    """Run genpartnew executable with the given input file."""
-    if _is_windows():
-        exe = _BIN_DIR / "genpartnew.exe"
-        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-        return
-    # --- Linux (unchanged) ---
-    exe = _BIN_DIR / "genpartnew"
-    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True)
-
-def run_distrib3d(input_file):
-    """Run distrib3d executable with the given input file.
-    Note: runs with cwd=_BIN_DIR so relative asset lookups work."""
-    if _is_windows():
-        exe = _BIN_DIR / "distrib3d.exe"
-        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-        return
-    # --- Linux (unchanged) ---
-    exe = _BIN_DIR / "distrib3d"
-    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-
-def run_disrealnew(input_file):
-    """Run disrealnew executable with the given input file."""
-    if _is_windows():
-        exe = _BIN_DIR / "disrealnew.exe"
-        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-        return
-    # --- Linux (unchanged) ---
-    exe = _BIN_DIR / "disrealnew"
-    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True)
-#test
