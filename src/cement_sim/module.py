@@ -2,6 +2,8 @@ import os
 import platform
 import subprocess
 from pathlib import Path
+from tempfile import NamedTemporaryFile  # new import for this function
+import uuid, shutil  # new imports used by the function
 
 
 # Path to the _bin folder inside the installed package
@@ -10,50 +12,6 @@ _BIN_DIR = Path(__file__).parent / "_bin"
 def _is_windows():
     return platform.system() == "Windows"
     
-# def run_cemhyd3d(sim_id, inputs:Dict[str:list]):
-#     """run all three functions""""
-    
-def run_genpartnew(input_file):
-    """Run genpartnew executable with the given input file."""
-    if _is_windows():
-        exe = _BIN_DIR / "genpartnew.exe"
-        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-        return
-    # --- Linux (unchanged) ---
-    exe = _BIN_DIR / "genpartnew"
-    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True)
-
-def run_distrib3d(input_file):
-    """Run distrib3d executable with the given input file.
-    Note: runs with cwd=_BIN_DIR so relative asset lookups work."""
-    if _is_windows():
-        exe = _BIN_DIR / "distrib3d.exe"
-        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-        return
-    # --- Linux (unchanged) ---
-    exe = _BIN_DIR / "distrib3d"
-    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-
-def run_disrealnew(input_file):
-    """Run disrealnew executable with the given input file."""
-    if _is_windows():
-        exe = _BIN_DIR / "disrealnew.exe"
-        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
-        return
-    # --- Linux (unchanged) ---
-    exe = _BIN_DIR / "disrealnew"
-    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True)
-
-
-# --- append to module.py ---
-
-from tempfile import NamedTemporaryFile  # new import for this function
-import uuid, shutil  # new imports used by the function
-
-# BEFORE:
-# def run_pipeline(id: str):
-
-# AFTER:
 def run_pipeline(id: str,
                  genpartnew_input: str,
                  distrib3d_input: str,
@@ -88,17 +46,35 @@ def run_pipeline(id: str,
 
     # ---- NEW: substitute tokens {ID} and {RUN} in the provided inputs ----
     if isinstance(genpartnew_input, dict):
+        part_name = Path(genpartnew_input["out_particle_ids"].format(ID=id)).name
         genpartnew_input = _build_genpartnew_from_dict(id, genpartnew_input)
     else:
         genpartnew_input = genpartnew_input.format(ID=id, RUN=run_id)
-    distrib3d_input  = distrib3d_input.format(ID=id, RUN=run_id)
-    disrealnew_input = disrealnew_input.format(ID=id, RUN=run_id)
+        _g_lines = [ln.strip() for ln in genpartnew_input.strip().splitlines()]
+        # tail is: ..., "8", <out_image>, <out_particle_ids>, "1"
+        part_name = Path(_g_lines[-2]).name
+        
+    if isinstance(distrib3d_input, dict):
+    # remember final image basename for copies/checks
+        phase_name = Path(distrib3d_input["out_name"].format(ID=id)).name
+        distrib3d_input = _build_distrib3d_from_dict(id, run_id, distrib3d_input)
+    else:
+        distrib3d_input = distrib3d_input.format(ID=id, RUN=run_id)
+        _d_lines = [ln.strip() for ln in distrib3d_input.strip().splitlines()]
+        phase_name = Path(_d_lines[3]).name  # 4th line = out_name
+
+    if isinstance(disrealnew_input, dict):
+    # (optional) derive part_name from dict, used later in your skip set
+        disrealnew_input = _build_disrealnew_from_dict(id, run_id, disrealnew_input)
+    else:
+        # keep string path behavior
+        disrealnew_input = disrealnew_input.format(ID=id, RUN=run_id)
     # ---------------------------------------------------------------------
 
 
 
-    phase_name = f"cement140w04flocf_{id}.img"
-    part_name  = f"pcem140w04floc_{id}.img"
+    # phase_name = f"cement140w04flocf_{id}.img"
+    # part_name  = f"pcem140w04floc_{id}.img"
     
 
     # === run genpartnew (cwd=run_dir) ===
@@ -128,7 +104,7 @@ def run_pipeline(id: str,
                        check=True, cwd=bin_dir)
     try: os.remove(temp_in2)
     except OSError: pass
-    for name in [f"cement140w04flocf_{id}.img", f"distrib3d_{id}.out"]:
+    for name in [phase_name, f"distrib3d_{id}.out"]:
         src = run_dir / name
         if src.exists():
             shutil.copy2(src, results_dir / name)
@@ -175,38 +151,6 @@ def run_pipeline(id: str,
     return results_dir
     # ====== end moved code ======
 
-
-def build_genpartnew_input(id: str, cfg: dict) -> str:
-    # Split can be provided as list ["0.515","0.041"] or a single "0.515 0.041"
-    if isinstance(cfg["calcium_sulfate_split"], (list, tuple)):
-        split = " ".join(map(str, cfg["calcium_sulfate_split"]))
-    else:
-        split = str(cfg["calcium_sulfate_split"])
-
-    lines = [
-        str(cfg["seed"]),
-        str(cfg.get("place_menu", 2)),
-        str(cfg["n_size_classes"]),
-        str(cfg.get("dispersion_px", 0)),
-        str(cfg["calcium_sulfate_vf"]),
-        split,
-    ]
-
-    for count, radius, phase in cfg["size_classes"]:
-        lines += [str(count), str(radius), str(phase)]
-
-    lines += [
-        str(cfg.get("report_phase_counts_menu", 4)),
-        str(cfg.get("flocculate_menu", 3)),
-        str(cfg.get("n_flocs", 1)),
-        str(cfg.get("output_menu", 8)),
-        cfg["out_image"].format(ID=id),
-        cfg["out_particle_ids"].format(ID=id),
-        str(cfg.get("exit_menu", 1)),
-    ]
-
-    return "\n".join(lines)
-
 def _build_genpartnew_from_dict(id: str, cfg: dict) -> str:
     # cfg schema:
     # {
@@ -246,3 +190,156 @@ def _build_genpartnew_from_dict(id: str, cfg: dict) -> str:
         str(cfg.get("exit_menu", 1)),
     ]
     return "\n".join(lines)
+
+def _build_distrib3d_from_dict(id: str, run_id: str, cfg: dict) -> str:
+    """
+    Build stdin for distrib3d from a config dict.
+    Fields:
+      seed: int
+      in_name: str          (e.g., "cem140w04floc_{ID}.img")
+      filters_root: str     (e.g., "cement140")
+      out_name: str         (e.g., "cement140w04flocf_{ID}.img")
+      targets: list[str|num] 8 values in order:
+               C3S vf, C3S sa, C2S vf, C2S sa, C3A vf, C3A sa, C4AF vf, C4AF sa
+    Adds "{RUN}/" prefix to in/out if they’re not absolute or already a path.
+    """
+    from pathlib import Path as _P
+
+    def _fmt_name(name: str) -> str:
+        s = name.format(ID=id)
+        # Prefix with run_id unless absolute or already contains a path separator
+        if _P(s).is_absolute() or ("/" in s or "\\" in s):
+            return s
+        return f"{run_id}/{s}"
+
+    seed = str(cfg.get("seed", -99))
+    in_name = _fmt_name(cfg["in_name"])
+    filters_root = str(cfg.get("filters_root", "cement140"))
+    out_name = _fmt_name(cfg["out_name"])
+
+    targets = cfg["targets"]
+    if len(targets) != 8:
+        raise ValueError(
+            "distrib3d.targets must have exactly 8 values in order: "
+            "C3S vf, C3S sa, C2S vf, C2S sa, C3A vf, C3A sa, C4AF vf, C4AF sa."
+        )
+    targets = [str(x) for x in targets]
+
+    lines = [seed, in_name, filters_root, out_name] + targets
+    return "\n".join(lines)
+
+def _build_disrealnew_from_dict(id: str, run_id: str, cfg: dict) -> str:
+    """
+    Build stdin for disrealnew from a config dict (exact order preserved).
+    """
+    from pathlib import Path as _P
+
+    def _fmt_name(name: str) -> str:
+        s = str(name).format(ID=id)
+        # Prefix with run_id unless absolute or already contains a path separator
+        if _P(s).is_absolute() or ("/" in s or "\\" in s):
+            return s
+        return f"{run_id}/{s}"
+
+    # phase map: list -> "1 2 3 ..." ; or accept string as-is
+    pm = cfg.get("phase_map")
+    if isinstance(pm, (list, tuple)):
+        phase_map = " ".join(map(str, pm))
+    else:
+        phase_map = str(pm)
+
+    lines = [
+        str(cfg.get("seed", -2794)),
+        _fmt_name(cfg["phase_file"]),
+        phase_map,
+        str(cfg.get("c3a_fa", 35)),
+        _fmt_name(cfg["part_file"]),
+    ]
+
+    # 7 pairs (count, phase_id)
+    one_px_pairs = cfg.get("one_px_pairs", [])
+    for count, phase_id in one_px_pairs:
+        lines += [str(count), str(phase_id)]
+
+    # trailing lone count
+    lines.append(str(cfg.get("one_px_extra", "0")))
+
+    # main controls
+    lines += [
+        str(cfg["cycles"]),
+        str(cfg["sat_flag"]),
+        str(cfg["max_diff"]),
+    ]
+
+    # 4 nucleation params
+    nuc = cfg["nuc_params"]
+    if len(nuc) != 4:
+        raise ValueError("disrealnew.nuc_params must have 4 entries.")
+    lines += list(map(str, nuc))
+
+    # 4 freqs
+    fr = cfg["freqs"]
+    if len(fr) != 4:
+        raise ValueError("disrealnew.freqs must have 4 entries.")
+    lines += list(map(str, fr))
+
+    # 4 thermal
+    th = cfg["thermal"]
+    if len(th) != 4:
+        raise ValueError("disrealnew.thermal must have 4 entries.")
+    lines += list(map(str, th))
+
+    # 3 activation energies
+    ea = cfg["Ea"]
+    if len(ea) != 3:
+        raise ValueError("disrealnew.Ea must have 3 entries.")
+    lines += list(map(str, ea))
+
+    # final scalars
+    lines += [
+        str(cfg["cycle_to_time"]),
+        str(cfg["agg_vf"]),
+    ]
+
+    # 8 flags
+    fl = cfg["flags"]
+    if len(fl) != 8:
+        raise ValueError("disrealnew.flags must have 8 entries.")
+    lines += list(map(str, fl))
+
+    text = "\n".join(lines)
+    if not text.endswith("\n"):
+        text += "\n"
+    return text
+
+def run_genpartnew(input_file):
+    """Run genpartnew executable with the given input file."""
+    if _is_windows():
+        exe = _BIN_DIR / "genpartnew.exe"
+        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
+        return
+    # --- Linux (unchanged) ---
+    exe = _BIN_DIR / "genpartnew"
+    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True)
+
+def run_distrib3d(input_file):
+    """Run distrib3d executable with the given input file.
+    Note: runs with cwd=_BIN_DIR so relative asset lookups work."""
+    if _is_windows():
+        exe = _BIN_DIR / "distrib3d.exe"
+        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
+        return
+    # --- Linux (unchanged) ---
+    exe = _BIN_DIR / "distrib3d"
+    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
+
+def run_disrealnew(input_file):
+    """Run disrealnew executable with the given input file."""
+    if _is_windows():
+        exe = _BIN_DIR / "disrealnew.exe"
+        subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True, cwd=_BIN_DIR)
+        return
+    # --- Linux (unchanged) ---
+    exe = _BIN_DIR / "disrealnew"
+    subprocess.run([str(exe)], stdin=open(input_file, "rb"), check=True)
+#test
