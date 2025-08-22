@@ -1,4 +1,5 @@
 # builders.py
+# This file is part of pycemhyd3d that provides utility functions for building input configurations.
 
 from pathlib import Path
 

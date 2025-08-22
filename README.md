@@ -7,8 +7,8 @@ And after compilation to install the package run it:
 
 pip install .
 
-Then you would be able to run the simulation script inside simulation folder which is named disrealnew.py
+Then you would be able to run the simulation script inside simulation folder which is named run.py
 
-and to uninstall use:
+and to uninstall the package use:
 
-pip uninstall cement_sim
+pip uninstall pycemhyd3d

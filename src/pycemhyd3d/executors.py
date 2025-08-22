@@ -1,4 +1,5 @@
 # executors.py
+# This file is part of pycemhyd3d that provides functions to execute the simulation steps.
 import os
 import shutil
 import subprocess
