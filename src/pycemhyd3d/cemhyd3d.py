@@ -34,8 +34,9 @@ def run_pipeline(id: str,
     except Exception:
         script_dir = Path.cwd()
 
-    results_dir = script_dir / f"result_{id}"
+    results_dir = script_dir / "results" / f"result_{id}"
     results_dir.mkdir(parents=True, exist_ok=True)
+
 
     # --- ensure local _bin exists next to the caller script ---
     local_bin = script_dir / "_bin"
@@ -108,5 +109,6 @@ def run_pipeline(id: str,
         phase_name=phase_name,
         part_name=part_name,
     )
-
+    shutil.rmtree(local_bin, ignore_errors=True)
+    print(f"✅ Pipeline completed successfully. Results in: {results_dir}")
     return results_dir
