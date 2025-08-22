@@ -139,16 +139,16 @@ set_target_properties({exe} PROPERTIES
 
 
 setup(
-    name        = "cement_sim",
+    name        = "pycemhyd3d",
     version     = "0.4",
     description = "Compile C files from scripts to bin (Linux & Windows)",
     cmdclass={
             'build_exe': BuildExecutables,
         },
-    packages=['cement_sim'],
+    packages=['pycemhyd3d'],
     package_dir={'': 'src'},
     package_data={
-        'cement_sim': ['_bin/*', '_bin/**/*']
+        'pycemhyd3d': ['_bin/*', '_bin/**/*']
     },
     include_package_data=True,
     py_modules  = [],

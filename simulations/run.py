@@ -1,6 +1,6 @@
-from cement_sim import module as m
+from pycemhyd3d import cemhyd3d as cem
 
-id = "01"
+id = ["01", "02", "03"]
 
 # === Input for genpartnew ===
 # NOTE: use short filenames (no {RUN}) because genpartnew runs with cwd=run_dir
@@ -102,4 +102,5 @@ dr_cfg = {
 
 
 # Run the pipeline
-m.run_pipeline(id, gp_cfg, d3_cfg, dr_cfg)
+for i in id:
+    cem.run_pipeline(i, gp_cfg, d3_cfg, dr_cfg)
