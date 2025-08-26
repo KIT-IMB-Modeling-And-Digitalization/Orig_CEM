@@ -7,7 +7,7 @@ And after compilation to install the package run it:
 
 pip install .
 
-Then you would be able to run the simulation script inside simulation folder which is named run.py
+Then you would be able to run the simulation script inside simulation folder which is named example.py
 
 and to uninstall the package use:
 

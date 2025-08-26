@@ -1,7 +1,26 @@
+'''Example driver script for pycemhyd3d
+
+Author:
+    Omid Jahromi <omid.esmaeelipoor@gmail.com>
+
+Overview:
+    Demonstrates how to run the full CEMHYD3D pipeline (genpartnew → distrib3d → disrealnew)
+    using the pycemhyd3d wrapper.
+
+    - Defines dictionary inputs for each executable:
+        * genpartnew (particle generation)
+        * distrib3d (phase distribution adjustment)
+        * disrealnew (hydration simulation)
+    - Iterates over multiple run identifiers (IDs).
+    - Calls `cem.run_cemhyd3d(...)` to execute the pipeline and collect results.
+
+Usage:
+    python this_script.py
+'''
 
 from pycemhyd3d import cemhyd3d as cem
 
-id = ["01", "02", "03"]
+id = ["01"]
 
 # === Input for genpartnew ===
 # NOTE: use short filenames (no {RUN}) because genpartnew runs with cwd=run_dir
@@ -104,4 +123,4 @@ dr_cfg = {
 
 # Run the pipeline
 for i in id:
-    cem.run_pipeline(i, gp_cfg, d3_cfg, dr_cfg)
+    cem.run_cemhyd3d(i, gp_cfg, d3_cfg, dr_cfg)

@@ -1,26 +1,50 @@
-# builders.py
-# This file is part of pycemhyd3d that provides utility functions for building input configurations.
+'''Builders for stdin payloads used by pycemhyd3d executables.
 
+Author:
+    Omid Jahromi <omid.esmaeelipoor@gmail.com>
+
+Overview:
+    This module converts Python dictionaries into the exact line-oriented text
+    formats expected on stdin by the native C executables:
+        - genpartnew
+        - distrib3d
+        - disrealnew
+
+Notes:
+    * Paths inside the generated text may be automatically prefixed with a run
+      directory identifier when appropriate (see each builder).
+    * All builders preserve the ordering required by the original tools.
+
+'''
 from pathlib import Path
 
 
 
 def _build_genpartnew_from_dict(id: str, cfg: dict) -> str:
-    # cfg schema:
-    # {
-    #   "seed": -3034,
-    #   "place_menu": 2,
-    #   "n_size_classes": 16,
-    #   "dispersion_px": 0,
-    #   "calcium_sulfate_vf": "0.0604",
-    #   "calcium_sulfate_split": ["0.515", "0.041"] or "0.515 0.041",
-    #   "size_classes": [(count, radius, phase_id), ...]  # 16 tuples
-    #   "report_phase_counts_menu": 4, "flocculate_menu": 3,
-    #   "n_flocs": 1, "output_menu": 8,
-    #   "out_image": "cem140w04floc_{ID}.img",
-    #   "out_particle_ids": "pcem140w04floc_{ID}.img",
-    #   "exit_menu": 1
-    # }
+    '''Build the stdin string for **genpartnew** from a configuration dict.
+
+    Args:
+        id: A short identifier used to substitute into output filenames
+            (e.g., `{ID}` tokens in `out_image`, `out_particle_ids`).
+        cfg: Configuration mapping with keys (examples / defaults shown):
+            seed (int)
+            place_menu (int, default 2)
+            n_size_classes (int)
+            dispersion_px (int, default 0)
+            calcium_sulfate_vf (str or number)
+            calcium_sulfate_split (list[str|num] | str)
+            size_classes (list[tuple]): sequence of (count, radius, phase_id)
+            report_phase_counts_menu (int, default 4)
+            flocculate_menu (int, default 3)
+            n_flocs (int, default 1)
+            output_menu (int, default 8)
+            out_image (str, may contain {ID})
+            out_particle_ids (str, may contain {ID})
+            exit_menu (int, default 1)
+
+    Returns:
+        A newline-joined string ready to be piped to genpartnew's stdin.
+    '''
     split = cfg["calcium_sulfate_split"]
     if isinstance(split, (list, tuple)):
         split = " ".join(map(str, split))
@@ -46,17 +70,30 @@ def _build_genpartnew_from_dict(id: str, cfg: dict) -> str:
     return "\n".join(lines)
 
 def _build_distrib3d_from_dict(id: str, run_id: str, cfg: dict) -> str:
-    """
-    Build stdin for distrib3d from a config dict.
-    Fields:
-      seed: int
-      in_name: str          (e.g., "cem140w04floc_{ID}.img")
-      filters_root: str     (e.g., "cement140")
-      out_name: str         (e.g., "cement140w04flocf_{ID}.img")
-      targets: list[str|num] 8 values in order:
-               C3S vf, C3S sa, C2S vf, C2S sa, C3A vf, C3A sa, C4AF vf, C4AF sa
-    Adds "{RUN}/" prefix to in/out if they’re not absolute or already a path.
-    """
+    '''Build the stdin string for **distrib3d** from a configuration dict.
+
+    Behavior:
+        - `in_name` and `out_name` are formatted with `{ID}` and, unless given
+          as absolute or already containing a path separator, are prefixed with
+          `{run_id}/` so files live inside the per-run sandbox.
+
+    Args:
+        id: Identifier substituted into filenames (via `{ID}`).
+        run_id: Name of the per-run directory used as a prefix for relative IO.
+        cfg: Keys:
+            seed (int, default -99)
+            in_name (str)
+            filters_root (str, default "cement140")
+            out_name (str)
+            targets (list[8]): C3S vf, C3S sa, C2S vf, C2S sa,
+                               C3A vf, C3A sa, C4AF vf, C4AF sa
+
+    Returns:
+        A newline-joined string for distrib3d's stdin.
+
+    Raises:
+        ValueError: if `targets` does not contain exactly 8 values.
+    '''
     from pathlib import Path as _P
 
     def _fmt_name(name: str) -> str:
@@ -83,9 +120,36 @@ def _build_distrib3d_from_dict(id: str, run_id: str, cfg: dict) -> str:
     return "\n".join(lines)
 
 def _build_disrealnew_from_dict(id: str, run_id: str, cfg: dict) -> str:
-    """
-    Build stdin for disrealnew from a config dict (exact order preserved).
-    """
+    '''Build the stdin string for **disrealnew** from a configuration dict.
+
+    Behavior:
+        - `phase_file` and `part_file` are formatted with `{ID}` and, unless
+          absolute or already a path, are prefixed with `{run_id}/`.
+        - Preserves the exact ordering required by disrealnew.
+
+    Args:
+        id: Identifier substituted into filenames (via `{ID}`).
+        run_id: Name of the per-run directory used as a prefix for relative IO.
+        cfg: Keys (abbreviated):
+            seed (int, default -2794)
+            phase_file (str)
+            phase_map (list|tuple|str): list/tuple joined as space-sep string
+            c3a_fa (int, default 35)
+            part_file (str)
+            one_px_pairs (list[tuple[int,int]], optional): 7 (count, phase_id)
+            one_px_extra (int|str, default "0")
+            cycles (int), sat_flag (int), max_diff (num)
+            nuc_params (list[4]), freqs (list[4]),
+            thermal (list[4]), Ea (list[3])
+            cycle_to_time (num), agg_vf (num)
+            flags (list[8])
+
+    Returns:
+        A newline-joined string for disrealnew's stdin (with trailing newline).
+
+    Raises:
+        ValueError: if any of the fixed-length arrays have wrong lengths.
+    '''
     from pathlib import Path as _P
 
     def _fmt_name(name: str) -> str:

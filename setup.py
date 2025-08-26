@@ -1,3 +1,26 @@
+'''setup.py for pycemhyd3d
+
+Author:
+    Omid Jahromi <omid.esmaeelipoor@gmail.com>
+
+Overview:
+    Custom setuptools script for the pycemhyd3d package.
+
+    Responsibilities:
+        - Defines a `build_exe` command that compiles the bundled C sources
+          (cemhyd3d executables: genpartnew, distrib3d, disrealnew).
+        - Handles both Linux (gcc) and Windows (CMake + Visual Studio) builds.
+        - Copies compiled executables into the package tree
+          (`src/pycemhyd3d/cempy3d/`) so they are shipped with the wheel/sdist.
+        - Cleans up intermediate `bin/` and `build/` folders after compilation.
+
+    Note:
+        This script extends setuptools with a platform-aware build step, so
+        users can install pycemhyd3d and have ready-to-use native executables
+        across supported platforms.
+'''
+
+
 from setuptools import setup
 from setuptools import Command
 import os
@@ -11,7 +34,10 @@ class BuildExecutables(Command):
     def finalize_options(self): pass
     def run(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        src_dir  = os.path.join(base_dir, 'scripts')
+        src_dir = os.path.join(base_dir, 'src', 'pycemhyd3d', 'cempy3d')
+        if not os.path.isdir(src_dir):
+            raise RuntimeError(f"Source dir not found: {src_dir}")
+
         bin_dir  = os.path.join(base_dir, 'bin')
         os.makedirs(bin_dir, exist_ok=True)
 
@@ -90,10 +116,10 @@ set_target_properties({exe} PROPERTIES
 
         else:
             raise RuntimeError(f"⚠️ Unsupported platform: {platform.system()}")
-    # Create _bin directory inside src/cement_sim
+    # Create _bin directory inside src/pycemhyd3d
         if is_linux:
-            pkg_dir = os.path.join(base_dir, 'src', 'cement_sim')
-            bin_dir_pkg = os.path.join(pkg_dir, '_bin')
+            pkg_dir = os.path.join(base_dir, 'src', 'pycemhyd3d')
+            bin_dir_pkg = os.path.join(pkg_dir, 'cempy3d')
             os.makedirs(bin_dir_pkg, exist_ok=True)
 
             for exe in executables:
@@ -112,10 +138,10 @@ set_target_properties({exe} PROPERTIES
                 for f in files:
                     shutil.copy(os.path.join(root, f), os.path.join(dest_dir, f))
 
-        # ---------- Copy compiled Windows executables into src/cement_sim/_bin ----------
+        # ---------- Copy compiled Windows executables into src/pycemhyd3d/cempy3d ----------
         if is_windows:
-            pkg_dir = os.path.join(base_dir, 'src', 'cement_sim')
-            bin_dir_pkg = os.path.join(pkg_dir, '_bin')
+            pkg_dir = os.path.join(base_dir, 'src', 'pycemhyd3d')
+            bin_dir_pkg = os.path.join(pkg_dir, 'cempy3d')
             os.makedirs(bin_dir_pkg, exist_ok=True)
 
             for exe in executables:
@@ -148,7 +174,7 @@ setup(
     packages=['pycemhyd3d'],
     package_dir={'': 'src'},
     package_data={
-        'pycemhyd3d': ['_bin/*', '_bin/**/*']
+        'pycemhyd3d': ['cempy3d/*']
     },
     include_package_data=True,
     py_modules  = [],

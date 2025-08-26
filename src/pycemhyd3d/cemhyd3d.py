@@ -1,5 +1,22 @@
-# pipeline.py
-# This file is the main module of pycemhyd3d 
+'''High-level pipeline orchestration for pycemhyd3d.
+
+Author:
+    Omid Jahromi <omid.esmaeelipoor@gmail.com>
+
+Overview:
+    Provides a single entry point `run_cemhyd3d(...)` that:
+      1) Creates a per-run sandbox directory under a local `cempy3d/` copy,
+      2) Builds stdin payloads for `genpartnew`, `distrib3d`, `disrealnew`,
+      3) Executes the three native tools in sequence,
+      4) Mirrors all produced files into `./results/result_<ID>/`,
+      5) Cleans up the per-run sandbox and temporary local `cempy3d/`.
+
+Notes:
+    - Executables are resolved from a package-shipped `cempy3d/` directory and
+      copied next to the caller if needed for the run.
+    - Windows vs. Linux executable names are handled (e.g., `.exe` suffix).
+
+'''
 import os
 import uuid
 import shutil
@@ -19,15 +36,38 @@ from .executors import (
 from .utils import is_windows
 
 # Path to the original _bin inside the installed package (for initial copy)
-_ORIG_BIN_DIR = Path(__file__).parent / "_bin"
+_ORIG_BIN_DIR = Path(__file__).parent / "cempy3d"
 
 
-def run_pipeline(id: str,
+def run_cemhyd3d(id: str,
                  genpartnew_input: str | dict,
                  distrib3d_input: str | dict,
                  disrealnew_input: str | dict):
 
-    # results next to the caller script (fallback to CWD)
+    '''Run the full CEMHYD3D pipeline: genpartnew → distrib3d → disrealnew.
+
+    Args:
+        id: Short identifier used in filenames and result folder naming.
+        genpartnew_input: Either a ready-made stdin string or a dict config
+            consumable by `_build_genpartnew_from_dict`.
+        distrib3d_input: Either a ready-made stdin string or a dict config
+            consumable by `_build_distrib3d_from_dict`.
+        disrealnew_input: Either a ready-made stdin string or a dict config
+            consumable by `_build_disrealnew_from_dict`.
+
+    Side effects:
+        - Creates `results/result_<id>/` next to the caller script.
+        - Copies a temporary `cempy3d/` folder next to the caller (removed at end).
+        - Creates a per-run sandbox inside that folder and deletes it after mirroring.
+
+    Returns:
+        pathlib.Path: The path to the results directory.
+
+    Raises:
+        FileNotFoundError: if required intermediate files are missing before
+            running `disrealnew` (checked inside executors).
+        subprocess.CalledProcessError: if any executable returns non-zero.
+    '''
     try:
         import inspect
         caller_file = Path(inspect.stack()[1].filename).resolve()
@@ -38,12 +78,29 @@ def run_pipeline(id: str,
     results_dir = script_dir / "results" / f"result_{id}"
     results_dir.mkdir(parents=True, exist_ok=True)
 
+    # --- ensure local cempy3d exists next to the caller script (idempotent) ---
+    local_bin = script_dir / "cempy3d"
+    marker = local_bin / ".ready"
 
-    # --- ensure local _bin exists next to the caller script ---
-    local_bin = script_dir / "_bin"
-    if not local_bin.exists():
-        shutil.copytree(_ORIG_BIN_DIR, local_bin)
+# If missing OR previous copy was interrupted (no marker), rebuild cleanly
+    if (not local_bin.exists()) or (not marker.exists()):
+        # remove any partial/old dir
+        shutil.rmtree(local_bin, ignore_errors=True)
+
+        # copy into a temp dir, then move into place to avoid half-copies
+        tmp_dir = script_dir / f".cempy3d.tmp-{os.getpid()}-{uuid.uuid4().hex[:6]}"
+        shutil.copytree(_ORIG_BIN_DIR, tmp_dir)
+
+        # move temp -> final
+        # (shutil.move is fine here since we just removed local_bin)
+        shutil.move(str(tmp_dir), str(local_bin))
+
+        # write a marker to signal a complete copy
+        marker.write_text("ok", encoding="utf-8")
+
     bin_dir = local_bin.resolve()
+# --------------------------------------------------------------------------
+
     # ----------------------------------------------------------
 
     run_id  = "gp_" + uuid.uuid4().hex[:6]
